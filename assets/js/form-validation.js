@@ -11,6 +11,8 @@ class FormValidator {
             newCelebrant: document.getElementById('newCelebrantForm')
         };
         
+        this.touchedFields = new Set(); // Rastreia campos que já foram tocados
+        
         this.validators = {
             required: (value) => value.trim() !== '',
             email: (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
@@ -54,7 +56,9 @@ class FormValidator {
         const dateInputs = document.querySelectorAll('input[type="date"]');
         dateInputs.forEach(input => {
             input.addEventListener('change', () => {
-                this.validateField(input);
+                if (this.touchedFields.has(input)) {
+                    this.validateField(input);
+                }
             });
         });
         
@@ -62,7 +66,9 @@ class FormValidator {
         const timeInputs = document.querySelectorAll('input[type="time"]');
         timeInputs.forEach(input => {
             input.addEventListener('change', () => {
-                this.validateField(input);
+                if (this.touchedFields.has(input)) {
+                    this.validateField(input);
+                }
             });
         });
     }
@@ -139,15 +145,20 @@ class FormValidator {
         const allInputs = document.querySelectorAll('input, select, textarea');
         allInputs.forEach(input => {
             if (input.type !== 'submit' && input.type !== 'button') {
-                // Validar apenas quando o usuário sair do campo (blur)
+                
+                // Marca campo como tocado quando recebe foco
+                input.addEventListener('focus', () => {
+                    this.touchedFields.add(input);
+                });
+                
+                // Valida apenas campos que já foram tocados
                 input.addEventListener('blur', () => {
-                    // Só valida se o campo já foi tocado e tem valor ou é obrigatório
-                    if (input.value || input.hasAttribute('required')) {
+                    if (this.touchedFields.has(input)) {
                         this.validateField(input);
                     }
                 });
                 
-                // Remover erro enquanto digita
+                // Remove erro enquanto digita
                 input.addEventListener('input', () => {
                     if (input.classList.contains('error')) {
                         this.clearFieldError(input);
@@ -174,7 +185,9 @@ class FormValidator {
         let isValid = true;
         const inputs = form.querySelectorAll('input, select, textarea');
         
+        // Marca todos os campos como tocados no submit
         inputs.forEach(input => {
+            this.touchedFields.add(input);
             if (input.hasAttribute('required') && !this.validateField(input)) {
                 isValid = false;
             }
