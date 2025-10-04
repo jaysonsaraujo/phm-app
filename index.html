@@ -26,19 +26,14 @@
                 <button class="nav-btn" onclick="location.reload()">
                     <i class="fas fa-calendar"></i> Calendário
                 </button>
+                <button class="nav-btn" onclick="window.location.href='gestao.html'">
+                    <i class="fas fa-list"></i> Gestão
+                </button>
                 <button class="nav-btn" onclick="window.location.href='configuracoes.html'">
                     <i class="fas fa-cog"></i> Configurações
                 </button>
             </nav>
         </div>
-        <nav class="main-nav">
-    <button class="nav-btn" onclick="window.location.href='gestao.html'">
-        <i class="fas fa-list"></i> Gestão
-    </button>
-    <button class="nav-btn" onclick="window.location.href='configuracoes.html'">
-        <i class="fas fa-cog"></i> Configurações
-    </button>
-</nav>
     </header>
 
     <!-- Container Principal -->
@@ -113,7 +108,7 @@
             </div>
             
             <form id="bookingForm" class="booking-form">
-                <!-- Tabela de Proclames - MOVIDA PARA O TOPO -->
+                <!-- Tabela de Proclames -->
                 <div class="form-section">
                     <h3><i class="fas fa-calendar-check"></i> Datas dos Proclames</h3>
                     <div class="proclames-table">
@@ -136,14 +131,16 @@
                             </tbody>
                         </table>
                     </div>
+                    
                     <!-- Data da Entrevista -->
-                    <div class="form-row">
-                        <div class="form-group"><p>
-                            <label>Data da Entrevista</label></p>
+                    <div class="form-row" style="margin-top: 1.5rem;">
+                        <div class="form-group">
+                            <label>Data da Entrevista</label>
                             <input type="date" id="interviewDate" tabindex="11">
                         </div>
-                    </div>                    
+                    </div>
                 </div>
+
                 <!-- Informações Básicas -->
                 <div class="form-section">
                     <h3><i class="fas fa-info-circle"></i> Informações Básicas</h3>
@@ -199,18 +196,28 @@
                     </div>
                     <div class="form-row">
                         <div class="form-group flex-1">
-                            <label>Local da Cerimônia * <small>(Duplo clique para adicionar novo)</small></label>
-                            <select id="ceremonyLocation" required tabindex="7" ondblclick="addNewLocation()">
-                                <option value="">Selecione o local...</option>
-                            </select>
+                            <label>Local da Cerimônia *</label>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <select id="ceremonyLocation" required tabindex="7" style="flex: 1;">
+                                    <option value="">Selecione o local...</option>
+                                </select>
+                                <button type="button" class="btn-icon-lg" onclick="window.location.href='gestao.html'" title="Gerenciar Locais">
+                                    <i class="fas fa-cog"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group flex-1">
-                            <label>Padre/Diácono * <small>(Duplo clique para adicionar novo)</small></label>
-                            <select id="celebrant" required tabindex="8" ondblclick="addNewCelebrant()">
-                                <option value="">Selecione o celebrante...</option>
-                            </select>
+                            <label>Padre/Diácono *</label>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <select id="celebrant" required tabindex="8" style="flex: 1;">
+                                    <option value="">Selecione o celebrante...</option>
+                                </select>
+                                <button type="button" class="btn-icon-lg" onclick="window.location.href='gestao.html'" title="Gerenciar Celebrantes">
+                                    <i class="fas fa-cog"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -237,7 +244,6 @@
                             </select>
                         </div>
                     </div>
-                    
                     <div class="form-row">
                         <div class="form-group flex-1">
                             <label>Observações</label>
@@ -259,81 +265,6 @@
                     </button>
                     <button type="submit" class="btn btn-primary" tabindex="14">
                         <i class="fas fa-save"></i> Salvar Agendamento
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modal de Novo Local -->
-    <div id="newLocationModal" class="modal">
-        <div class="modal-content modal-small">
-            <div class="modal-header">
-                <h3><i class="fas fa-map-marker-alt"></i> Adicionar Novo Local</h3>
-                <button class="close-modal" onclick="closeLocationModal()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <form id="newLocationForm">
-                <div class="form-group">
-                    <label>Nome do Local *</label>
-                    <input type="text" id="newLocationName" required class="uppercase-input">
-                </div>
-                <div class="form-group">
-                    <label>Endereço</label>
-                    <input type="text" id="newLocationAddress" class="uppercase-input">
-                </div>
-                <div class="form-group">
-                    <label>Capacidade</label>
-                    <input type="number" id="newLocationCapacity" min="1">
-                </div>
-                <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" onclick="closeLocationModal()">
-                        Cancelar
-                    </button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-plus"></i> Adicionar
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modal de Novo Celebrante -->
-    <div id="newCelebrantModal" class="modal">
-        <div class="modal-content modal-small">
-            <div class="modal-header">
-                <h3><i class="fas fa-user-tie"></i> Adicionar Novo Padre/Diácono</h3>
-                <button class="close-modal" onclick="closeCelebrantModal()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <form id="newCelebrantForm">
-                <div class="form-group">
-                    <label>Nome Completo *</label>
-                    <input type="text" id="newCelebrantName" required class="uppercase-input">
-                </div>
-                <div class="form-group">
-                    <label>Tipo *</label>
-                    <select id="newCelebrantType" required>
-                        <option value="PADRE">Padre</option>
-                        <option value="DIÁCONO">Diácono</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Telefone</label>
-                    <input type="tel" id="newCelebrantPhone" placeholder="(00) 00000-0000">
-                </div>
-                <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" id="newCelebrantEmail">
-                </div>
-                <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" onclick="closeCelebrantModal()">
-                        Cancelar
-                    </button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-plus"></i> Adicionar
                     </button>
                 </div>
             </form>
