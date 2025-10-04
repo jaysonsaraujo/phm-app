@@ -30,9 +30,11 @@ class WeddingCalendar {
     }
     
     setupEventListeners() {
-        // Navegação por mês
         const prevMonth = document.getElementById('prevMonth');
         const nextMonth = document.getElementById('nextMonth');
+        const prevYear = document.getElementById('prevYear');
+        const nextYear = document.getElementById('nextYear');
+        const yearSelect = document.getElementById('yearSelect');
         
         if (prevMonth) {
             prevMonth.addEventListener('click', () => this.previousMonth());
@@ -40,12 +42,6 @@ class WeddingCalendar {
         if (nextMonth) {
             nextMonth.addEventListener('click', () => this.nextMonth());
         }
-        
-        // Navegação por ano
-        const prevYear = document.getElementById('prevYear');
-        const nextYear = document.getElementById('nextYear');
-        const yearSelect = document.getElementById('yearSelect');
-        
         if (prevYear) {
             prevYear.addEventListener('click', () => this.previousYear());
         }
@@ -177,17 +173,18 @@ class WeddingCalendar {
         const daysInPrevMonth = new Date(this.currentYear, this.currentMonth, 0).getDate();
         
         const calendarDays = document.getElementById('calendarDays');
-        if (!calendarDays) return;
+        if (!calendarDays) {
+            console.error('Elemento calendarDays não encontrado!');
+            return;
+        }
         
         calendarDays.innerHTML = '';
         
         // Dias do mês anterior
         for (let i = firstDay - 1; i >= 0; i--) {
-            const dayDiv = this.createDayElement(
-                daysInPrevMonth - i,
-                'other-month',
-                new Date(this.currentYear, this.currentMonth - 1, daysInPrevMonth - i)
-            );
+            const day = daysInPrevMonth - i;
+            const date = new Date(this.currentYear, this.currentMonth - 1, day);
+            const dayDiv = this.createDayElement(day, 'other-month', date);
             calendarDays.appendChild(dayDiv);
         }
         
@@ -198,18 +195,17 @@ class WeddingCalendar {
             calendarDays.appendChild(dayDiv);
         }
         
-        // Dias do próximo mês para completar 6 semanas
+        // Dias do próximo mês
         const totalCells = calendarDays.children.length;
         const remainingCells = 42 - totalCells;
         
         for (let day = 1; day <= remainingCells; day++) {
-            const dayDiv = this.createDayElement(
-                day,
-                'other-month',
-                new Date(this.currentYear, this.currentMonth + 1, day)
-            );
+            const date = new Date(this.currentYear, this.currentMonth + 1, day);
+            const dayDiv = this.createDayElement(day, 'other-month', date);
             calendarDays.appendChild(dayDiv);
         }
+        
+        console.log(`Calendário renderizado: ${calendarDays.children.length} células`);
     }
     
     createDayElement(day, additionalClass, date) {
@@ -421,26 +417,6 @@ function closeModal() {
     if (modal) modal.classList.remove('active');
 }
 
-function addNewLocation() {
-    const modal = document.getElementById('newLocationModal');
-    if (modal) modal.classList.add('active');
-}
-
-function closeLocationModal() {
-    const modal = document.getElementById('newLocationModal');
-    if (modal) modal.classList.remove('active');
-}
-
-function addNewCelebrant() {
-    const modal = document.getElementById('newCelebrantModal');
-    if (modal) modal.classList.add('active');
-}
-
-function closeCelebrantModal() {
-    const modal = document.getElementById('newCelebrantModal');
-    if (modal) modal.classList.remove('active');
-}
-
 function closeAlert() {
     const modal = document.getElementById('alertModal');
     if (modal) modal.classList.remove('active');
@@ -450,6 +426,7 @@ function closeAlert() {
 let weddingCalendar;
 
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM carregado, inicializando calendário...');
     weddingCalendar = new WeddingCalendar();
     
     // Adiciona listener para mudança de data do casamento
