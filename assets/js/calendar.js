@@ -204,8 +204,6 @@ class WeddingCalendar {
             const dayDiv = this.createDayElement(day, 'other-month', date);
             calendarDays.appendChild(dayDiv);
         }
-        
-        console.log(`Calendário renderizado: ${calendarDays.children.length} células`);
     }
     
     createDayElement(day, additionalClass, date) {
@@ -305,9 +303,10 @@ class WeddingCalendar {
         this.loadCelebrants();
         this.updateProclames(date);
         
+        // Focus no primeiro campo: Data da Entrevista
         setTimeout(() => {
-            const brideName = document.getElementById('brideName');
-            if (brideName) brideName.focus();
+            const interviewDate = document.getElementById('interviewDate');
+            if (interviewDate) interviewDate.focus();
         }, 300);
     }
     
@@ -426,7 +425,6 @@ function closeAlert() {
 let weddingCalendar;
 
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM carregado, inicializando calendário...');
     weddingCalendar = new WeddingCalendar();
     
     // Adiciona listener para mudança de data do casamento
