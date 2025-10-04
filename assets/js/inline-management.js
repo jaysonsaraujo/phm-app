@@ -136,26 +136,60 @@ class InlineManagement {
     
     async saveLocation() {
         const id = document.getElementById('locationId').value;
+        const nameInput = document.getElementById('locationName');
+        const addressInput = document.getElementById('locationAddress');
+        const capacityInput = document.getElementById('locationCapacity');
+        
+        // Validação básica
+        if (!nameInput.value.trim()) {
+            this.showToast('Nome do local é obrigatório', 'error');
+            nameInput.focus();
+            return;
+        }
+        
         const dados = {
-            nome_local: document.getElementById('locationName').value,
-            endereco: document.getElementById('locationAddress').value,
-            capacidade: document.getElementById('locationCapacity').value
+            nome_local: nameInput.value.trim(),
+            endereco: addressInput.value.trim(),
+            capacidade: capacityInput.value ? parseInt(capacityInput.value) : null
         };
         
+        console.log('Salvando local:', dados);
+        
         try {
-            const url = id ? `api/buscar-locais.php?id=${id}` : 'api/buscar-locais.php';
-            const method = id ? 'PUT' : 'POST';
+            let url, method;
+            
+            if (id) {
+                // Editando
+                url = `api/buscar-locais.php`;
+                method = 'PUT';
+                dados.id = parseInt(id);
+            } else {
+                // Novo
+                url = 'api/buscar-locais.php';
+                method = 'POST';
+            }
+            
+            console.log(`${method} para ${url}`);
             
             const response = await fetch(url, {
                 method: method,
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json'
+                },
                 body: JSON.stringify(dados)
             });
             
+            console.log('Response status:', response.status);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
             const result = await response.json();
+            console.log('Resultado:', result);
             
             if (result.success) {
-                this.showToast(id ? 'Local atualizado!' : 'Local adicionado!', 'success');
+                this.showToast(id ? 'Local atualizado com sucesso!' : 'Local adicionado com sucesso!', 'success');
                 closeLocationForm();
                 this.loadLocations();
                 
@@ -164,32 +198,41 @@ class InlineManagement {
                     window.weddingCalendar.loadLocations();
                 }
             } else {
-                this.showToast(result.message || 'Erro ao salvar', 'error');
+                this.showToast(result.message || 'Erro ao salvar local', 'error');
             }
         } catch (error) {
-            console.error('Erro:', error);
+            console.error('Erro completo:', error);
             this.showToast('Erro ao comunicar com servidor', 'error');
         }
     }
     
     async toggleLocationStatus(id, currentStatus) {
         try {
-            const response = await fetch(`api/buscar-locais.php?id=${id}`, {
+            const response = await fetch('api/buscar-locais.php', {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ativo: currentStatus ? 0 : 1 })
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ 
+                    id: parseInt(id),
+                    ativo: currentStatus ? 0 : 1 
+                })
             });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
             
             const result = await response.json();
             
             if (result.success) {
-                this.showToast('Status atualizado!', 'success');
+                this.showToast('Status atualizado com sucesso!', 'success');
                 this.loadLocations();
                 if (window.weddingCalendar) {
                     window.weddingCalendar.loadLocations();
                 }
             } else {
-                this.showToast(result.message || 'Erro ao atualizar', 'error');
+                this.showToast(result.message || 'Erro ao atualizar status', 'error');
             }
         } catch (error) {
             console.error('Erro:', error);
@@ -205,16 +248,20 @@ class InlineManagement {
                 method: 'DELETE'
             });
             
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
             const result = await response.json();
             
             if (result.success) {
-                this.showToast('Local excluído!', 'success');
+                this.showToast('Local excluído com sucesso!', 'success');
                 this.loadLocations();
                 if (window.weddingCalendar) {
                     window.weddingCalendar.loadLocations();
                 }
             } else {
-                this.showToast(result.message || 'Erro ao excluir', 'error');
+                this.showToast(result.message || 'Erro ao excluir local', 'error');
             }
         } catch (error) {
             console.error('Erro:', error);
@@ -294,27 +341,60 @@ class InlineManagement {
     
     async saveCelebrant() {
         const id = document.getElementById('celebrantId').value;
+        const nameInput = document.getElementById('celebrantName');
+        const typeInput = document.getElementById('celebrantType');
+        
+        // Validação básica
+        if (!nameInput.value.trim()) {
+            this.showToast('Nome é obrigatório', 'error');
+            nameInput.focus();
+            return;
+        }
+        
+        if (!typeInput.value) {
+            this.showToast('Tipo é obrigatório', 'error');
+            typeInput.focus();
+            return;
+        }
+        
         const dados = {
-            nome_completo: document.getElementById('celebrantName').value,
-            tipo: document.getElementById('celebrantType').value,
+            nome_completo: nameInput.value.trim(),
+            tipo: typeInput.value,
             telefone: document.getElementById('celebrantPhone').value,
             email: document.getElementById('celebrantEmail').value
         };
         
+        console.log('Salvando celebrante:', dados);
+        
         try {
-            const url = id ? `api/buscar-padres.php?id=${id}` : 'api/buscar-padres.php';
-            const method = id ? 'PUT' : 'POST';
+            let url, method;
+            
+            if (id) {
+                url = 'api/buscar-padres.php';
+                method = 'PUT';
+                dados.id = parseInt(id);
+            } else {
+                url = 'api/buscar-padres.php';
+                method = 'POST';
+            }
             
             const response = await fetch(url, {
                 method: method,
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json'
+                },
                 body: JSON.stringify(dados)
             });
             
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
             const result = await response.json();
+            console.log('Resultado:', result);
             
             if (result.success) {
-                this.showToast(id ? 'Celebrante atualizado!' : 'Celebrante adicionado!', 'success');
+                this.showToast(id ? 'Celebrante atualizado com sucesso!' : 'Celebrante adicionado com sucesso!', 'success');
                 closeCelebrantForm();
                 this.loadCelebrants();
                 
@@ -322,32 +402,41 @@ class InlineManagement {
                     window.weddingCalendar.loadCelebrants();
                 }
             } else {
-                this.showToast(result.message || 'Erro ao salvar', 'error');
+                this.showToast(result.message || 'Erro ao salvar celebrante', 'error');
             }
         } catch (error) {
-            console.error('Erro:', error);
+            console.error('Erro completo:', error);
             this.showToast('Erro ao comunicar com servidor', 'error');
         }
     }
     
     async toggleCelebrantStatus(id, currentStatus) {
         try {
-            const response = await fetch(`api/buscar-padres.php?id=${id}`, {
+            const response = await fetch('api/buscar-padres.php', {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ativo: currentStatus ? 0 : 1 })
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ 
+                    id: parseInt(id),
+                    ativo: currentStatus ? 0 : 1 
+                })
             });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
             
             const result = await response.json();
             
             if (result.success) {
-                this.showToast('Status atualizado!', 'success');
+                this.showToast('Status atualizado com sucesso!', 'success');
                 this.loadCelebrants();
                 if (window.weddingCalendar) {
                     window.weddingCalendar.loadCelebrants();
                 }
             } else {
-                this.showToast(result.message || 'Erro ao atualizar', 'error');
+                this.showToast(result.message || 'Erro ao atualizar status', 'error');
             }
         } catch (error) {
             console.error('Erro:', error);
@@ -363,16 +452,20 @@ class InlineManagement {
                 method: 'DELETE'
             });
             
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
             const result = await response.json();
             
             if (result.success) {
-                this.showToast('Celebrante excluído!', 'success');
+                this.showToast('Celebrante excluído com sucesso!', 'success');
                 this.loadCelebrants();
                 if (window.weddingCalendar) {
                     window.weddingCalendar.loadCelebrants();
                 }
             } else {
-                this.showToast(result.message || 'Erro ao excluir', 'error');
+                this.showToast(result.message || 'Erro ao excluir celebrante', 'error');
             }
         } catch (error) {
             console.error('Erro:', error);
