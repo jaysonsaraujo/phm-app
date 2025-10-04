@@ -38,16 +38,13 @@ class FormValidator {
         // Máscara de telefone/WhatsApp
         const phoneInputs = document.querySelectorAll('input[type="tel"]');
         phoneInputs.forEach(input => {
-            // Remove listeners anteriores
             input.removeEventListener('input', this.phoneMask);
             input.removeEventListener('keydown', this.preventInvalidChars);
             
-            // Adiciona novos listeners
             input.addEventListener('input', this.phoneMask.bind(this));
             input.addEventListener('keydown', this.preventInvalidChars);
             input.addEventListener('paste', this.handlePaste.bind(this));
             
-            // Aplica máscara ao valor atual se existir
             if (input.value) {
                 input.value = this.formatPhone(input.value);
             }
@@ -71,19 +68,15 @@ class FormValidator {
     }
     
     preventInvalidChars(e) {
-        // Permite: backspace, delete, tab, escape, enter
         if ([46, 8, 9, 27, 13].indexOf(e.keyCode) !== -1 ||
-            // Permite: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
             (e.keyCode === 65 && e.ctrlKey === true) ||
             (e.keyCode === 67 && e.ctrlKey === true) ||
             (e.keyCode === 86 && e.ctrlKey === true) ||
             (e.keyCode === 88 && e.ctrlKey === true) ||
-            // Permite: home, end, left, right
             (e.keyCode >= 35 && e.keyCode <= 39)) {
             return;
         }
         
-        // Bloqueia se não for número
         if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && 
             (e.keyCode < 96 || e.keyCode > 105)) {
             e.preventDefault();
@@ -101,17 +94,14 @@ class FormValidator {
         const input = e.target;
         let value = input.value.replace(/\D/g, '');
         
-        // Limita a 11 dígitos
         if (value.length > 11) {
             value = value.substring(0, 11);
         }
         
-        // Aplica a formatação
         input.value = this.formatPhone(value);
     }
     
     formatPhone(value) {
-        // Remove tudo que não é número
         value = value.replace(/\D/g, '');
         
         if (value.length === 0) {
@@ -127,11 +117,9 @@ class FormValidator {
         }
         
         if (value.length <= 10) {
-            // Telefone fixo: (00) 0000-0000
             return `(${value.substring(0, 2)}) ${value.substring(2, 6)}-${value.substring(6)}`;
         }
         
-        // Celular: (00) 00000-0000
         return `(${value.substring(0, 2)}) ${value.substring(2, 7)}-${value.substring(7, 11)}`;
     }
     
@@ -151,12 +139,16 @@ class FormValidator {
         const allInputs = document.querySelectorAll('input, select, textarea');
         allInputs.forEach(input => {
             if (input.type !== 'submit' && input.type !== 'button') {
+                // Validar apenas quando o usuário sair do campo (blur)
                 input.addEventListener('blur', () => {
-                    this.validateField(input);
+                    // Só valida se o campo já foi tocado e tem valor ou é obrigatório
+                    if (input.value || input.hasAttribute('required')) {
+                        this.validateField(input);
+                    }
                 });
                 
+                // Remover erro enquanto digita
                 input.addEventListener('input', () => {
-                    // Remove erro ao começar a digitar
                     if (input.classList.contains('error')) {
                         this.clearFieldError(input);
                     }
@@ -189,7 +181,6 @@ class FormValidator {
         });
         
         if (!isValid) {
-            // Foca no primeiro campo com erro
             const firstError = form.querySelector('.error');
             if (firstError) {
                 firstError.focus();
@@ -211,7 +202,7 @@ class FormValidator {
             errorMessage = 'Este campo é obrigatório';
         }
         
-        // Validação específica por tipo
+        // Validação específica por tipo (só se tiver valor)
         if (isValid && value) {
             switch (field.type) {
                 case 'email':
@@ -257,7 +248,7 @@ class FormValidator {
             }
         }
         
-        // Validação de nome completo
+        // Validação de nome completo (só se tiver valor)
         if (isValid && value && (field.id === 'brideName' || field.id === 'groomName')) {
             const names = value.trim().split(/\s+/);
             if (names.length < 2) {
@@ -279,13 +270,11 @@ class FormValidator {
     showFieldError(field, message) {
         field.classList.add('error');
         
-        // Remove mensagem de erro anterior
         let errorElement = field.parentElement.querySelector('.error-message');
         if (errorElement) {
             errorElement.remove();
         }
         
-        // Adiciona nova mensagem
         errorElement = document.createElement('span');
         errorElement.className = 'error-message show';
         errorElement.textContent = message;
@@ -306,7 +295,6 @@ class FormValidator {
         const titleElement = document.getElementById('alertTitle');
         const messageElement = document.getElementById('alertMessage');
         
-        // Define ícone baseado no tipo
         const icons = {
             success: '<i class="fas fa-check-circle"></i>',
             error: '<i class="fas fa-times-circle"></i>',
@@ -321,7 +309,6 @@ class FormValidator {
         
         modal.classList.add('active');
         
-        // Auto-fecha após 3 segundos para sucesso
         if (type === 'success') {
             setTimeout(() => {
                 modal.classList.remove('active');
