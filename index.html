@@ -1,350 +1,163 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Agendamento de Casamentos - Paróquia</title>
-    
-    <!-- CSS -->
-    <link rel="stylesheet" href="assets/css/style.css">
-    
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-</head>
-<body>
-    <!-- Header -->
-    <header class="main-header">
-        <div class="header-container">
-            <div class="logo-section">
-                <i class="fas fa-church"></i>
-                <h1 id="system-title">Sistema de Agendamento de Casamentos</h1>
-            </div>
-            <nav class="main-nav">
-                <button class="nav-btn" onclick="location.reload()">
-                    <i class="fas fa-calendar"></i> Calendário
-                </button>
-                <button class="nav-btn" onclick="window.location.href='configuracoes.html'">
-                    <i class="fas fa-cog"></i> Configurações
-                </button>
-            </nav>
+<!-- Modal de Agendamento -->
+<div id="bookingModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2><i class="fas fa-rings-wedding"></i> Novo Agendamento de Casamento</h2>
+            <button class="close-modal" onclick="closeModal()">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
-    </header>
-
-    <!-- Container Principal -->
-    <main class="main-container">
-        <!-- Controles do Calendário -->
-        <section class="calendar-controls">
-            <div class="year-selector">
-                <button id="prevYear" class="year-btn">
-                    <i class="fas fa-chevron-left"></i>
-                </button>
-                <select id="yearSelect" class="year-select">
-                    <!-- Anos serão preenchidos via JavaScript -->
-                </select>
-                <button id="nextYear" class="year-btn">
-                    <i class="fas fa-chevron-right"></i>
-                </button>
-            </div>
-            
-            <div class="month-navigation">
-                <button id="prevMonth" class="month-btn">
-                    <i class="fas fa-angle-left"></i> Mês Anterior
-                </button>
-                <h2 id="currentMonth" class="current-month">Janeiro 2024</h2>
-                <button id="nextMonth" class="month-btn">
-                    Próximo Mês <i class="fas fa-angle-right"></i>
-                </button>
-            </div>
-            
-            <div class="legend">
-                <span class="legend-item">
-                    <span class="legend-color available"></span> Disponível
-                </span>
-                <span class="legend-item">
-                    <span class="legend-color booked"></span> Reservado
-                </span>
-                <span class="legend-item">
-                    <span class="legend-color past"></span> Passado
-                </span>
-                <span class="legend-item">
-                    <span class="legend-color today"></span> Hoje
-                </span>
-            </div>
-        </section>
-
-        <!-- Calendário -->
-        <section class="calendar-wrapper">
-            <div id="calendar" class="calendar-grid">
-                <div class="weekdays">
-                    <div class="weekday">DOM</div>
-                    <div class="weekday">SEG</div>
-                    <div class="weekday">TER</div>
-                    <div class="weekday">QUA</div>
-                    <div class="weekday">QUI</div>
-                    <div class="weekday">SEX</div>
-                    <div class="weekday">SÁB</div>
+        
+        <form id="bookingForm" class="booking-form">
+            <!-- Tabela de Proclames -->
+            <div class="form-section">
+                <h3><i class="fas fa-calendar-check"></i> Datas dos Proclames</h3>
+                <div class="proclames-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Primeiro Domingo</th>
+                                <th>Segundo Domingo</th>
+                                <th>Terceiro Domingo</th>
+                                <th>Data do Casamento</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td id="firstSunday">--/--/----</td>
+                                <td id="secondSunday">--/--/----</td>
+                                <td id="thirdSunday">--/--/----</td>
+                                <td id="weddingDateDisplay">--/--/----</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
-                <div id="calendarDays" class="calendar-days">
-                    <!-- Dias serão preenchidos via JavaScript -->
+                
+                <!-- Data da Entrevista - MOVIDA PARA CÁ -->
+                <div class="form-row" style="margin-top: 1.5rem;">
+                    <div class="form-group">
+                        <label>Data da Entrevista</label>
+                        <input type="date" id="interviewDate" tabindex="11">
+                    </div>
                 </div>
             </div>
-        </section>
-    </main>
 
-    <!-- Modal de Agendamento -->
-    <div id="bookingModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2><i class="fas fa-rings-wedding"></i> Novo Agendamento de Casamento</h2>
-                <button class="close-modal" onclick="closeModal()">
-                    <i class="fas fa-times"></i>
+            <!-- Informações Básicas -->
+            <div class="form-section">
+                <h3><i class="fas fa-info-circle"></i> Informações Básicas</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>ID do Agendamento</label>
+                        <input type="text" id="bookingId" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Data do Agendamento</label>
+                        <input type="text" id="bookingDate" readonly>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dados dos Noivos -->
+            <div class="form-section">
+                <h3><i class="fas fa-heart"></i> Dados dos Noivos</h3>
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label>Nome Completo da Noiva *</label>
+                        <input type="text" id="brideName" required class="uppercase-input" tabindex="1">
+                    </div>
+                    <div class="form-group">
+                        <label>WhatsApp da Noiva *</label>
+                        <input type="tel" id="brideWhatsapp" required placeholder="(00) 00000-0000" tabindex="2">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label>Nome Completo do Noivo *</label>
+                        <input type="text" id="groomName" required class="uppercase-input" tabindex="3">
+                    </div>
+                    <div class="form-group">
+                        <label>WhatsApp do Noivo *</label>
+                        <input type="tel" id="groomWhatsapp" required placeholder="(00) 00000-0000" tabindex="4">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dados da Cerimônia -->
+            <div class="form-section">
+                <h3><i class="fas fa-church"></i> Dados da Cerimônia</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Data do Casamento *</label>
+                        <input type="date" id="weddingDate" required tabindex="5">
+                    </div>
+                    <div class="form-group">
+                        <label>Horário *</label>
+                        <input type="time" id="weddingTime" required tabindex="6">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label>Local da Cerimônia * <small>(Duplo clique para adicionar novo)</small></label>
+                        <select id="ceremonyLocation" required tabindex="7" ondblclick="addNewLocation()">
+                            <option value="">Selecione o local...</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label>Padre/Diácono * <small>(Duplo clique para adicionar novo)</small></label>
+                        <select id="celebrant" required tabindex="8" ondblclick="addNewCelebrant()">
+                            <option value="">Selecione o celebrante...</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informações Adicionais (sem Data da Entrevista) -->
+            <div class="form-section">
+                <h3><i class="fas fa-clipboard-list"></i> Informações Adicionais</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Transferência</label>
+                        <select id="transferType" tabindex="9">
+                            <option value="NAO">Não há transferência</option>
+                            <option value="ENTRADA_PAROQUIA">Vem de outra paróquia</option>
+                            <option value="SAIDA_PAROQUIA">Irá para outra paróquia</option>
+                            <option value="ENTRADA_DIOCESE">Vem de outra diocese</option>
+                            <option value="SAIDA_DIOCESE">Irá para outra diocese</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Com Efeito Civil</label>
+                        <select id="civilEffect" tabindex="10">
+                            <option value="0">Não</option>
+                            <option value="1">Sim</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label>Observações</label>
+                        <textarea id="observations" rows="3" class="uppercase-input" tabindex="12"></textarea>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label>Mensagem do Sistema</label>
+                        <textarea id="systemMessage" rows="2" class="uppercase-input" tabindex="13"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botões de Ação -->
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()" tabindex="15">
+                    <i class="fas fa-arrow-left"></i> Voltar ao Calendário
+                </button>
+                <button type="submit" class="btn btn-primary" tabindex="14">
+                    <i class="fas fa-save"></i> Salvar Agendamento
                 </button>
             </div>
-            
-            <form id="bookingForm" class="booking-form">
-                <!-- Tabela de Proclames - MOVIDA PARA O TOPO -->
-                <div class="form-section">
-                    <h3><i class="fas fa-calendar-check"></i> Datas dos Proclames</h3>
-                    <div class="proclames-table">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Primeiro Domingo</th>
-                                    <th>Segundo Domingo</th>
-                                    <th>Terceiro Domingo</th>
-                                    <th>Data do Casamento</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td id="firstSunday">--/--/----</td>
-                                    <td id="secondSunday">--/--/----</td>
-                                    <td id="thirdSunday">--/--/----</td>
-                                    <td id="weddingDateDisplay">--/--/----</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Informações Básicas -->
-                <div class="form-section">
-                    <h3><i class="fas fa-info-circle"></i> Informações Básicas</h3>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>ID do Agendamento</label>
-                            <input type="text" id="bookingId" readonly>
-                        </div>
-                        <div class="form-group">
-                            <label>Data do Agendamento</label>
-                            <input type="text" id="bookingDate" readonly>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Dados dos Noivos -->
-                <div class="form-section">
-                    <h3><i class="fas fa-heart"></i> Dados dos Noivos</h3>
-                    <div class="form-row">
-                        <div class="form-group flex-1">
-                            <label>Nome Completo da Noiva *</label>
-                            <input type="text" id="brideName" required class="uppercase-input" tabindex="1">
-                        </div>
-                        <div class="form-group">
-                            <label>WhatsApp da Noiva *</label>
-                            <input type="tel" id="brideWhatsapp" required placeholder="(00) 00000-0000" tabindex="2">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group flex-1">
-                            <label>Nome Completo do Noivo *</label>
-                            <input type="text" id="groomName" required class="uppercase-input" tabindex="3">
-                        </div>
-                        <div class="form-group">
-                            <label>WhatsApp do Noivo *</label>
-                            <input type="tel" id="groomWhatsapp" required placeholder="(00) 00000-0000" tabindex="4">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Dados da Cerimônia -->
-                <div class="form-section">
-                    <h3><i class="fas fa-church"></i> Dados da Cerimônia</h3>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Data do Casamento *</label>
-                            <input type="date" id="weddingDate" required tabindex="5">
-                        </div>
-                        <div class="form-group">
-                            <label>Horário *</label>
-                            <input type="time" id="weddingTime" required tabindex="6">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group flex-1">
-                            <label>Local da Cerimônia * <small>(Duplo clique para adicionar novo)</small></label>
-                            <select id="ceremonyLocation" required tabindex="7" ondblclick="addNewLocation()">
-                                <option value="">Selecione o local...</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group flex-1">
-                            <label>Padre/Diácono * <small>(Duplo clique para adicionar novo)</small></label>
-                            <select id="celebrant" required tabindex="8" ondblclick="addNewCelebrant()">
-                                <option value="">Selecione o celebrante...</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Informações Adicionais -->
-                <div class="form-section">
-                    <h3><i class="fas fa-clipboard-list"></i> Informações Adicionais</h3>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Transferência</label>
-                            <select id="transferType" tabindex="9">
-                                <option value="NAO">Não há transferência</option>
-                                <option value="ENTRADA_PAROQUIA">Vem de outra paróquia</option>
-                                <option value="SAIDA_PAROQUIA">Irá para outra paróquia</option>
-                                <option value="ENTRADA_DIOCESE">Vem de outra diocese</option>
-                                <option value="SAIDA_DIOCESE">Irá para outra diocese</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Com Efeito Civil</label>
-                            <select id="civilEffect" tabindex="10">
-                                <option value="0">Não</option>
-                                <option value="1">Sim</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Data da Entrevista</label>
-                            <input type="date" id="interviewDate" tabindex="11">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group flex-1">
-                            <label>Observações</label>
-                            <textarea id="observations" rows="3" class="uppercase-input" tabindex="12"></textarea>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group flex-1">
-                            <label>Mensagem do Sistema</label>
-                            <textarea id="systemMessage" rows="2" class="uppercase-input" tabindex="13"></textarea>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Botões de Ação -->
-                <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal()" tabindex="15">
-                        <i class="fas fa-arrow-left"></i> Voltar ao Calendário
-                    </button>
-                    <button type="submit" class="btn btn-primary" tabindex="14">
-                        <i class="fas fa-save"></i> Salvar Agendamento
-                    </button>
-                </div>
-            </form>
-        </div>
+        </form>
     </div>
-
-    <!-- Modal de Novo Local -->
-    <div id="newLocationModal" class="modal">
-        <div class="modal-content modal-small">
-            <div class="modal-header">
-                <h3><i class="fas fa-map-marker-alt"></i> Adicionar Novo Local</h3>
-                <button class="close-modal" onclick="closeLocationModal()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <form id="newLocationForm">
-                <div class="form-group">
-                    <label>Nome do Local *</label>
-                    <input type="text" id="newLocationName" required class="uppercase-input">
-                </div>
-                <div class="form-group">
-                    <label>Endereço</label>
-                    <input type="text" id="newLocationAddress" class="uppercase-input">
-                </div>
-                <div class="form-group">
-                    <label>Capacidade</label>
-                    <input type="number" id="newLocationCapacity" min="1">
-                </div>
-                <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" onclick="closeLocationModal()">
-                        Cancelar
-                    </button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-plus"></i> Adicionar
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modal de Novo Celebrante -->
-    <div id="newCelebrantModal" class="modal">
-        <div class="modal-content modal-small">
-            <div class="modal-header">
-                <h3><i class="fas fa-user-tie"></i> Adicionar Novo Padre/Diácono</h3>
-                <button class="close-modal" onclick="closeCelebrantModal()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <form id="newCelebrantForm">
-                <div class="form-group">
-                    <label>Nome Completo *</label>
-                    <input type="text" id="newCelebrantName" required class="uppercase-input">
-                </div>
-                <div class="form-group">
-                    <label>Tipo *</label>
-                    <select id="newCelebrantType" required>
-                        <option value="PADRE">Padre</option>
-                        <option value="DIÁCONO">Diácono</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Telefone</label>
-                    <input type="tel" id="newCelebrantPhone" placeholder="(00) 00000-0000">
-                </div>
-                <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" id="newCelebrantEmail">
-                </div>
-                <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" onclick="closeCelebrantModal()">
-                        Cancelar
-                    </button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-plus"></i> Adicionar
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modal de Alertas -->
-    <div id="alertModal" class="modal">
-        <div class="modal-content modal-alert">
-            <div class="alert-icon" id="alertIcon"></div>
-            <h3 id="alertTitle"></h3>
-            <p id="alertMessage"></p>
-            <button class="btn btn-primary" onclick="closeAlert()">Entendi</button>
-        </div>
-    </div>
-
-    <!-- Scripts -->
-    <script src="assets/js/calendar.js"></script>
-    <script src="assets/js/form-validation.js"></script>
-    <script src="assets/js/form-handler.js"></script>
-    <script src="assets/js/main.js"></script>
-</body>
-</html>
+</div>
