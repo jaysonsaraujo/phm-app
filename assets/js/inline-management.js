@@ -70,7 +70,7 @@ class InlineManagement {
     
     async loadLocations() {
         try {
-            const response = await fetch('api/buscar-locais.php?include_inactive=1');
+            const response = await fetch('/api/buscar-locais.php?include_inactive=1');
             const data = await response.json();
             
             if (data.success) {
@@ -140,7 +140,6 @@ class InlineManagement {
         const addressInput = document.getElementById('locationAddress');
         const capacityInput = document.getElementById('locationCapacity');
         
-        // Validação básica
         if (!nameInput.value.trim()) {
             this.showToast('Nome do local é obrigatório', 'error');
             nameInput.focus();
@@ -153,23 +152,16 @@ class InlineManagement {
             capacidade: capacityInput.value ? parseInt(capacityInput.value) : null
         };
         
-        console.log('Salvando local:', dados);
-        
         try {
             let url, method;
             
             if (id) {
-                // Editando
-                url = `api/buscar-locais.php`;
+                url = `/api/buscar-locais.php?id=${id}`;
                 method = 'PUT';
-                dados.id = parseInt(id);
             } else {
-                // Novo
-                url = 'api/buscar-locais.php';
+                url = '/api/buscar-locais.php';
                 method = 'POST';
             }
-            
-            console.log(`${method} para ${url}`);
             
             const response = await fetch(url, {
                 method: method,
@@ -179,21 +171,17 @@ class InlineManagement {
                 body: JSON.stringify(dados)
             });
             
-            console.log('Response status:', response.status);
-            
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             
             const result = await response.json();
-            console.log('Resultado:', result);
             
             if (result.success) {
                 this.showToast(id ? 'Local atualizado com sucesso!' : 'Local adicionado com sucesso!', 'success');
                 closeLocationForm();
                 this.loadLocations();
                 
-                // Recarrega o select no formulário principal
                 if (window.weddingCalendar) {
                     window.weddingCalendar.loadLocations();
                 }
@@ -201,20 +189,19 @@ class InlineManagement {
                 this.showToast(result.message || 'Erro ao salvar local', 'error');
             }
         } catch (error) {
-            console.error('Erro completo:', error);
+            console.error('Erro:', error);
             this.showToast('Erro ao comunicar com servidor', 'error');
         }
     }
     
     async toggleLocationStatus(id, currentStatus) {
         try {
-            const response = await fetch('api/buscar-locais.php', {
+            const response = await fetch(`/api/buscar-locais.php?id=${id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ 
-                    id: parseInt(id),
                     ativo: currentStatus ? 0 : 1 
                 })
             });
@@ -244,7 +231,7 @@ class InlineManagement {
         if (!confirm(`Tem certeza que deseja excluir "${nome}"?`)) return;
         
         try {
-            const response = await fetch(`api/buscar-locais.php?id=${id}`, {
+            const response = await fetch(`/api/buscar-locais.php?id=${id}`, {
                 method: 'DELETE'
             });
             
@@ -273,7 +260,7 @@ class InlineManagement {
     
     async loadCelebrants() {
         try {
-            const response = await fetch('api/buscar-padres.php?include_inactive=1');
+            const response = await fetch('/api/buscar-padres.php?include_inactive=1');
             const data = await response.json();
             
             if (data.success) {
@@ -344,7 +331,6 @@ class InlineManagement {
         const nameInput = document.getElementById('celebrantName');
         const typeInput = document.getElementById('celebrantType');
         
-        // Validação básica
         if (!nameInput.value.trim()) {
             this.showToast('Nome é obrigatório', 'error');
             nameInput.focus();
@@ -364,17 +350,14 @@ class InlineManagement {
             email: document.getElementById('celebrantEmail').value
         };
         
-        console.log('Salvando celebrante:', dados);
-        
         try {
             let url, method;
             
             if (id) {
-                url = 'api/buscar-padres.php';
+                url = `/api/buscar-padres.php?id=${id}`;
                 method = 'PUT';
-                dados.id = parseInt(id);
             } else {
-                url = 'api/buscar-padres.php';
+                url = '/api/buscar-padres.php';
                 method = 'POST';
             }
             
@@ -391,7 +374,6 @@ class InlineManagement {
             }
             
             const result = await response.json();
-            console.log('Resultado:', result);
             
             if (result.success) {
                 this.showToast(id ? 'Celebrante atualizado com sucesso!' : 'Celebrante adicionado com sucesso!', 'success');
@@ -405,20 +387,19 @@ class InlineManagement {
                 this.showToast(result.message || 'Erro ao salvar celebrante', 'error');
             }
         } catch (error) {
-            console.error('Erro completo:', error);
+            console.error('Erro:', error);
             this.showToast('Erro ao comunicar com servidor', 'error');
         }
     }
     
     async toggleCelebrantStatus(id, currentStatus) {
         try {
-            const response = await fetch('api/buscar-padres.php', {
+            const response = await fetch(`/api/buscar-padres.php?id=${id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ 
-                    id: parseInt(id),
                     ativo: currentStatus ? 0 : 1 
                 })
             });
@@ -448,7 +429,7 @@ class InlineManagement {
         if (!confirm(`Tem certeza que deseja excluir "${nome}"?`)) return;
         
         try {
-            const response = await fetch(`api/buscar-padres.php?id=${id}`, {
+            const response = await fetch(`/api/buscar-padres.php?id=${id}`, {
                 method: 'DELETE'
             });
             
