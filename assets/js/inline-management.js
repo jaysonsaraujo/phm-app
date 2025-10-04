@@ -1,21 +1,6 @@
-/*
- * This file is a local copy of the upstream "inline-management.js" from the
- * phm‑app repository.  We keep a local copy here solely for demonstration
- * purposes so that we can illustrate the changes required to fix bugs found
- * during analysis.  No functional JavaScript code from the upstream project
- * is executed in this environment.  See the project repository for the
- * authoritative version.
- */
-
-// BEGIN: Original code imported from the repository
-//
-// NOTE: The original code appears below.  It has been modified in place
-// downstream to demonstrate a fix for an observed bug.  The modifications
-// themselves are documented further below within this file.  For the full
-// unmodified source please refer to the upstream repository.
-
 /**
- * Gerenciamento Inline de Locais e Celebrantes
+ * Sistema de Gerenciamento Inline
+ * Gerenciamento de locais e celebrantes diretamente no formulário
  */
 
 class InlineManagement {
@@ -24,514 +9,467 @@ class InlineManagement {
         this.celebrants = [];
         this.init();
     }
-
+    
     init() {
         this.setupForms();
+        this.loadInitialData();
     }
-
+    
     setupForms() {
-        // Form de Local
-        const locationForm = document.getElementById('locationForm');
+        // Form de novo local
+        const locationForm = document.getElementById('newLocationForm');
         if (locationForm) {
-            locationForm.addEventListener('submit', (e) => {
+            locationForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                this.saveLocation();
+                await this.saveLocation();
             });
         }
-
-        // Form de Celebrante
-        const celebrantForm = document.getElementById('celebrantForm');
+        
+        // Form de novo celebrante
+        const celebrantForm = document.getElementById('newCelebrantForm');
         if (celebrantForm) {
-            celebrantForm.addEventListener('submit', (e) => {
+            celebrantForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                this.saveCelebrant();
+                await this.saveCelebrant();
             });
         }
-
-        // Máscara de telefone
-        const phone = document.getElementById('celebrantPhone');
-        if (phone) {
-            phone.addEventListener('input', this.applyPhoneMask);
-        }
-
-        // Uppercase inputs
-        document.querySelectorAll('.uppercase-input').forEach(input => {
-            input.addEventListener('input', (e) => {
-                const start = e.target.selectionStart;
-                const end = e.target.selectionEnd;
-                e.target.value = e.target.value.toUpperCase();
-                e.target.setSelectionRange(start, end);
-            });
-        });
     }
-
-    applyPhoneMask(e) {
-        let value = e.target.value.replace(/\D/g, '');
-        if (value.length > 11) value = value.substring(0, 11);
-
-        if (value.length === 0) {
-            e.target.value = '';
-        } else if (value.length <= 2) {
-            e.target.value = `(${value}`;
-        } else if (value.length <= 6) {
-            e.target.value = `(${value.substring(0, 2)}) ${value.substring(2)}`;
-        } else if (value.length <= 10) {
-            e.target.value = `(${value.substring(0, 2)}) ${value.substring(2, 6)}-${value.substring(6)}`;
-        } else {
-            e.target.value = `(${value.substring(0, 2)}) ${value.substring(2, 7)}-${value.substring(7, 11)}`;
-        }
+    
+    async loadInitialData() {
+        await this.loadLocations();
+        await this.loadCelebrants();
     }
-
-    // ========== LOCAIS ==========
-
+    
+    /**
+     * Carrega lista de locais
+     */
     async loadLocations() {
         try {
-            // When running in a subdirectory (e.g. on a shared hosting provider),
-            // using an absolute path like "/api/buscar-locais.php" may target
-            // the wrong URL.  To avoid this mis‑direction we instead fetch
-            // relative to the current page ("api/buscar-locais.php").
-            const response = await fetch('api/buscar-locais.php?include_inactive=1');
-            const data = await response.json();
-
+            const response = await fetch('api/buscar-locais.php');
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const text = await response.text();
+            
+            // Tenta fazer parse do JSON
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch (e) {
+                console.error('Resposta não é JSON válido:', text);
+                throw new Error('Resposta inválida do servidor');
+            }
+            
             if (data.success) {
                 this.locations = data.locations;
-                this.renderLocations();
+                this.updateLocationSelect();
+            } else {
+                console.error('Erro ao carregar locais:', data.message);
             }
         } catch (error) {
             console.error('Erro ao carregar locais:', error);
-            this.showToast('Erro ao carregar locais', 'error');
+            this.showAlert('error', 'Erro', 'Não foi possível carregar os locais');
         }
     }
-
-    renderLocations() {
-        const tbody = document.getElementById('locationsTableBody');
-
-        if (this.locations.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Nenhum local cadastrado</td></tr>';
-            return;
-        }
-
-        tbody.innerHTML = this.locations.map(loc => `
-            <tr>
-                <td><strong>${loc.nome_local}</strong></td>
-                <td>${loc.endereco || '-'}</td>
-                <td>${loc.capacidade || '-'}</td>
-                <td>
-                    <span class="status-badge ${loc.ativo ? 'ativo' : 'inativo'}">
-                        ${loc.ativo ? 'Ativo' : 'Inativo'}
-                    </span>
-                </td>
-                <td>
-                    <button class="action-btn" onclick="inlineManagement.editLocation(${loc.id})">
-                        <i class="fas fa-edit"></i> Editar
-                    </button>
-                    <button class="action-btn ${loc.ativo ? '' : 'danger'}" 
-                            onclick="inlineManagement.toggleLocationStatus(${loc.id}, ${loc.ativo})">
-                        <i class="fas fa-toggle-${loc.ativo ? 'on' : 'off'}"></i> 
-                        ${loc.ativo ? 'Desativar' : 'Ativar'}
-                    </button>
-                    ${loc.total_agendamentos === 0 ? `
-                        <button class="action-btn danger" 
-                                onclick="inlineManagement.deleteLocation(${loc.id}, '${loc.nome_local.replace(/'/g, "\\'")}')">
-                            <i class="fas fa-trash"></i> Excluir
-                        </button>
-                    ` : ''}
-                </td>
-            </tr>
-        `).join('');
-    }
-
-    editLocation(id) {
-        const location = this.locations.find(l => l.id === id);
-        if (!location) return;
-
-        document.getElementById('locationFormTitle').innerHTML = '<i class="fas fa-edit"></i> Editar Local';
-        document.getElementById('locationId').value = location.id;
-        document.getElementById('locationName').value = location.nome_local;
-        document.getElementById('locationAddress').value = location.endereco || '';
-        document.getElementById('locationCapacity').value = location.capacidade || '';
-
-        document.getElementById('locationFormModal').classList.add('active');
-    }
-
-    async saveLocation() {
-        const id = document.getElementById('locationId').value;
-        const nameInput = document.getElementById('locationName');
-        const addressInput = document.getElementById('locationAddress');
-        const capacityInput = document.getElementById('locationCapacity');
-
-        if (!nameInput.value.trim()) {
-            this.showToast('Nome do local é obrigatório', 'error');
-            nameInput.focus();
-            return;
-        }
-
-        const dados = {
-            nome_local: nameInput.value.trim(),
-            endereco: addressInput.value.trim(),
-            capacidade: capacityInput.value ? parseInt(capacityInput.value) : null
-        };
-
-        try {
-            let url, method;
-
-            if (id) {
-                url = `api/buscar-locais.php?id=${id}`;
-                method = 'PUT';
-            } else {
-                url = 'api/buscar-locais.php';
-                method = 'POST';
-            }
-
-            const response = await fetch(url, {
-                method: method,
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(dados)
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const result = await response.json();
-
-            if (result.success) {
-                this.showToast(id ? 'Local atualizado com sucesso!' : 'Local adicionado com sucesso!', 'success');
-                closeLocationForm();
-                this.loadLocations();
-
-                if (window.weddingCalendar) {
-                    window.weddingCalendar.loadLocations();
-                }
-            } else {
-                this.showToast(result.message || 'Erro ao salvar local', 'error');
-            }
-        } catch (error) {
-            console.error('Erro:', error);
-            this.showToast('Erro ao comunicar com servidor', 'error');
-        }
-    }
-
-    async toggleLocationStatus(id, currentStatus) {
-        try {
-            const response = await fetch(`api/buscar-locais.php?id=${id}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ 
-                    ativo: currentStatus ? 0 : 1 
-                })
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const result = await response.json();
-
-            if (result.success) {
-                this.showToast('Status atualizado com sucesso!', 'success');
-                this.loadLocations();
-                if (window.weddingCalendar) {
-                    window.weddingCalendar.loadLocations();
-                }
-            } else {
-                this.showToast(result.message || 'Erro ao atualizar status', 'error');
-            }
-        } catch (error) {
-            console.error('Erro:', error);
-            this.showToast('Erro ao comunicar com servidor', 'error');
-        }
-    }
-
-    async deleteLocation(id, nome) {
-        if (!confirm(`Tem certeza que deseja excluir "${nome}"?`)) return;
-
-        try {
-            const response = await fetch(`api/buscar-locais.php?id=${id}`, {
-                method: 'DELETE'
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const result = await response.json();
-
-            if (result.success) {
-                this.showToast('Local excluído com sucesso!', 'success');
-                this.loadLocations();
-                if (window.weddingCalendar) {
-                    window.weddingCalendar.loadLocations();
-                }
-            } else {
-                this.showToast(result.message || 'Erro ao excluir local', 'error');
-            }
-        } catch (error) {
-            console.error('Erro:', error);
-            this.showToast('Erro ao comunicar com servidor', 'error');
-        }
-    }
-
-    // ========== CELEBRANTES ==========
-
+    
+    /**
+     * Carrega lista de celebrantes
+     */
     async loadCelebrants() {
         try {
-            const response = await fetch('api/buscar-padres.php?include_inactive=1');
-            const data = await response.json();
-
+            const response = await fetch('api/buscar-padres.php');
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const text = await response.text();
+            
+            // Tenta fazer parse do JSON
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch (e) {
+                console.error('Resposta não é JSON válido:', text);
+                throw new Error('Resposta inválida do servidor');
+            }
+            
             if (data.success) {
                 this.celebrants = data.celebrants;
-                this.renderCelebrants();
+                this.updateCelebrantSelect();
+            } else {
+                console.error('Erro ao carregar celebrantes:', data.message);
             }
         } catch (error) {
             console.error('Erro ao carregar celebrantes:', error);
-            this.showToast('Erro ao carregar celebrantes', 'error');
+            this.showAlert('error', 'Erro', 'Não foi possível carregar os celebrantes');
         }
     }
-
-    renderCelebrants() {
-        const tbody = document.getElementById('celebrantsTableBody');
-
-        if (this.celebrants.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Nenhum celebrante cadastrado</td></tr>';
-            return;
-        }
-
-        tbody.innerHTML = this.celebrants.map(cel => `
-            <tr>
-                <td><strong>${cel.nome_completo}</strong></td>
-                <td><span class="status-badge tipo">${cel.tipo}</span></td>
-                <td>${cel.telefone_formatado || '-'}</td>
-                <td>${cel.email || '-'}</td>
-                <td>
-                    <span class="status-badge ${cel.ativo ? 'ativo' : 'inativo'}">
-                        ${cel.ativo ? 'Ativo' : 'Inativo'}
-                    </span>
-                </td>
-                <td>
-                    <button class="action-btn" onclick="inlineManagement.editCelebrant(${cel.id})">
-                        <i class="fas fa-edit"></i> Editar
-                    </button>
-                    <button class="action-btn ${cel.ativo ? '' : 'danger'}" 
-                            onclick="inlineManagement.toggleCelebrantStatus(${cel.id}, ${cel.ativo})">
-                        <i class="fas fa-toggle-${cel.ativo ? 'on' : 'off'}"></i> 
-                        ${cel.ativo ? 'Desativar' : 'Ativar'}
-                    </button>
-                    ${cel.celebracoes_futuras === 0 ? `
-                        <button class="action-btn danger" 
-                                onclick="inlineManagement.deleteCelebrant(${cel.id}, '${cel.nome_completo.replace(/'/g, "\\'")}')">
-                            <i class="fas fa-trash"></i> Excluir
-                        </button>
-                    ` : ''}
-                </td>
-            </tr>
-        `).join('');
-    }
-
-    editCelebrant(id) {
-        const celebrant = this.celebrants.find(c => c.id === id);
-        if (!celebrant) return;
-
-        document.getElementById('celebrantFormTitle').innerHTML = '<i class="fas fa-edit"></i> Editar Celebrante';
-        document.getElementById('celebrantId').value = celebrant.id;
-        document.getElementById('celebrantName').value = celebrant.nome_completo;
-        document.getElementById('celebrantType').value = celebrant.tipo;
-        document.getElementById('celebrantPhone').value = celebrant.telefone || '';
-        document.getElementById('celebrantEmail').value = celebrant.email || '';
-
-        document.getElementById('celebrantFormModal').classList.add('active');
-    }
-
-    async saveCelebrant() {
-        const id = document.getElementById('celebrantId').value;
-        const nameInput = document.getElementById('celebrantName');
-        const typeInput = document.getElementById('celebrantType');
-
-        if (!nameInput.value.trim()) {
-            this.showToast('Nome é obrigatório', 'error');
-            nameInput.focus();
-            return;
-        }
-
-        if (!typeInput.value) {
-            this.showToast('Tipo é obrigatório', 'error');
-            typeInput.focus();
-            return;
-        }
-
-        const dados = {
-            nome_completo: nameInput.value.trim(),
-            tipo: typeInput.value,
-            telefone: document.getElementById('celebrantPhone').value,
-            email: document.getElementById('celebrantEmail').value
-        };
-
-        try {
-            let url, method;
-
-            if (id) {
-                url = `api/buscar-padres.php?id=${id}`;
-                method = 'PUT';
-            } else {
-                url = 'api/buscar-padres.php';
-                method = 'POST';
+    
+    /**
+     * Atualiza o select de locais
+     */
+    updateLocationSelect() {
+        const select = document.getElementById('ceremonyLocation');
+        if (!select) return;
+        
+        const currentValue = select.value;
+        select.innerHTML = '<option value="">Selecione o local...</option>';
+        
+        this.locations.forEach(location => {
+            if (location.ativo) {
+                const option = document.createElement('option');
+                option.value = location.id;
+                option.textContent = location.nome_local;
+                
+                if (location.capacidade) {
+                    option.textContent += ` (Capacidade: ${location.capacidade})`;
+                }
+                
+                select.appendChild(option);
             }
-
-            const response = await fetch(url, {
-                method: method,
+        });
+        
+        // Restaura valor selecionado se existir
+        if (currentValue) {
+            select.value = currentValue;
+        }
+    }
+    
+    /**
+     * Atualiza o select de celebrantes
+     */
+    updateCelebrantSelect() {
+        const select = document.getElementById('celebrant');
+        if (!select) return;
+        
+        const currentValue = select.value;
+        select.innerHTML = '<option value="">Selecione o celebrante...</option>';
+        
+        // Agrupa por tipo
+        const padres = this.celebrants.filter(c => c.tipo === 'PADRE' && c.ativo);
+        const diaconos = this.celebrants.filter(c => c.tipo === 'DIÁCONO' && c.ativo);
+        
+        if (padres.length > 0) {
+            const optgroupPadres = document.createElement('optgroup');
+            optgroupPadres.label = 'PADRES';
+            
+            padres.forEach(padre => {
+                const option = document.createElement('option');
+                option.value = padre.id;
+                option.textContent = padre.nome_completo;
+                optgroupPadres.appendChild(option);
+            });
+            
+            select.appendChild(optgroupPadres);
+        }
+        
+        if (diaconos.length > 0) {
+            const optgroupDiaconos = document.createElement('optgroup');
+            optgroupDiaconos.label = 'DIÁCONOS';
+            
+            diaconos.forEach(diacono => {
+                const option = document.createElement('option');
+                option.value = diacono.id;
+                option.textContent = diacono.nome_completo;
+                optgroupDiaconos.appendChild(option);
+            });
+            
+            select.appendChild(optgroupDiaconos);
+        }
+        
+        // Restaura valor selecionado se existir
+        if (currentValue) {
+            select.value = currentValue;
+        }
+    }
+    
+    /**
+     * Salva novo local
+     */
+    async saveLocation() {
+        const nameInput = document.getElementById('newLocationName');
+        const addressInput = document.getElementById('newLocationAddress');
+        const capacityInput = document.getElementById('newLocationCapacity');
+        
+        if (!nameInput.value.trim()) {
+            this.showAlert('error', 'Erro', 'Nome do local é obrigatório');
+            return;
+        }
+        
+        const locationData = {
+            nome_local: nameInput.value.trim().toUpperCase(),
+            endereco: addressInput.value.trim().toUpperCase(),
+            capacidade: capacityInput.value || null
+        };
+        
+        try {
+            const response = await fetch('api/adicionar-local.php', {
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(dados)
+                body: JSON.stringify(locationData)
             });
-
+            
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-
-            const result = await response.json();
-
-            if (result.success) {
-                this.showToast(id ? 'Celebrante atualizado com sucesso!' : 'Celebrante adicionado com sucesso!', 'success');
-                closeCelebrantForm();
-                this.loadCelebrants();
-
-                if (window.weddingCalendar) {
-                    window.weddingCalendar.loadCelebrants();
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                this.showAlert('success', 'Sucesso', 'Local adicionado com sucesso!');
+                
+                // Limpa o formulário
+                document.getElementById('newLocationForm').reset();
+                
+                // Recarrega a lista
+                await this.loadLocations();
+                
+                // Seleciona o novo local
+                if (data.locationId) {
+                    const select = document.getElementById('ceremonyLocation');
+                    if (select) {
+                        select.value = data.locationId;
+                    }
                 }
+                
+                // Fecha o modal
+                this.closeLocationModal();
             } else {
-                this.showToast(result.message || 'Erro ao salvar celebrante', 'error');
+                this.showAlert('error', 'Erro', data.message || 'Erro ao adicionar local');
             }
         } catch (error) {
             console.error('Erro:', error);
-            this.showToast('Erro ao comunicar com servidor', 'error');
+            this.showAlert('error', 'Erro', 'Erro de conexão ao adicionar local');
         }
     }
-
-    async toggleCelebrantStatus(id, currentStatus) {
+    
+    /**
+     * Salva novo celebrante
+     */
+    async saveCelebrant() {
+        const nameInput = document.getElementById('newCelebrantName');
+        const typeInput = document.getElementById('newCelebrantType');
+        const phoneInput = document.getElementById('newCelebrantPhone');
+        const emailInput = document.getElementById('newCelebrantEmail');
+        
+        if (!nameInput.value.trim()) {
+            this.showAlert('error', 'Erro', 'Nome do celebrante é obrigatório');
+            return;
+        }
+        
+        const celebrantData = {
+            nome_completo: nameInput.value.trim().toUpperCase(),
+            tipo: typeInput.value,
+            telefone: phoneInput.value.trim(),
+            email: emailInput.value.trim().toLowerCase()
+        };
+        
         try {
-            const response = await fetch(`api/buscar-padres.php?id=${id}`, {
+            const response = await fetch('api/adicionar-celebrante.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(celebrantData)
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                this.showAlert('success', 'Sucesso', 'Celebrante adicionado com sucesso!');
+                
+                // Limpa o formulário
+                document.getElementById('newCelebrantForm').reset();
+                
+                // Recarrega a lista
+                await this.loadCelebrants();
+                
+                // Seleciona o novo celebrante
+                if (data.celebrantId) {
+                    const select = document.getElementById('celebrant');
+                    if (select) {
+                        select.value = data.celebrantId;
+                    }
+                }
+                
+                // Fecha o modal
+                this.closeCelebrantModal();
+            } else {
+                this.showAlert('error', 'Erro', data.message || 'Erro ao adicionar celebrante');
+            }
+        } catch (error) {
+            console.error('Erro:', error);
+            this.showAlert('error', 'Erro', 'Erro de conexão ao adicionar celebrante');
+        }
+    }
+    
+    /**
+     * Abre modal para gerenciar locais
+     */
+    openManageLocations() {
+        const modal = document.getElementById('manageLocationsModal');
+        if (!modal) {
+            this.createManageLocationsModal();
+        }
+        
+        this.loadLocationsForManagement();
+        document.getElementById('manageLocationsModal').classList.add('active');
+    }
+    
+    /**
+     * Abre modal para gerenciar celebrantes
+     */
+    openManageCelebrants() {
+        const modal = document.getElementById('manageCelebrantsModal');
+        if (!modal) {
+            this.createManageCelebrantsModal();
+        }
+        
+        this.loadCelebrantsForManagement();
+        document.getElementById('manageCelebrantsModal').classList.add('active');
+    }
+    
+    /**
+     * Cria modal de gerenciamento de locais
+     */
+    createManageLocationsModal() {
+        const modal = document.createElement('div');
+        modal.id = 'manageLocationsModal';
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2><i class="fas fa-map-marker-alt"></i> Gerenciar Locais</h2>
+                    <button class="close-modal" onclick="inlineManager.closeManageLocationsModal()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="management-list" id="locationsList">
+                        <!-- Lista será preenchida dinamicamente -->
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+    
+    /**
+     * Cria modal de gerenciamento de celebrantes
+     */
+    createManageCelebrantsModal() {
+        const modal = document.createElement('div');
+        modal.id = 'manageCelebrantsModal';
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2><i class="fas fa-user-tie"></i> Gerenciar Celebrantes</h2>
+                    <button class="close-modal" onclick="inlineManager.closeManageCelebrantsModal()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="management-list" id="celebrantsList">
+                        <!-- Lista será preenchida dinamicamente -->
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+    
+    /**
+     * Carrega locais para gerenciamento
+     */
+    async loadLocationsForManagement() {
+        await this.loadLocations();
+        
+        const container = document.getElementById('locationsList');
+        if (!container) return;
+        
+        container.innerHTML = '';
+        
+        this.locations.forEach(location => {
+            const item = document.createElement('div');
+            item.className = 'management-item';
+            item.innerHTML = `
+                <div class="item-info">
+                    <strong>${location.nome_local}</strong>
+                    ${location.endereco ? `<br><small>${location.endereco}</small>` : ''}
+                    ${location.capacidade ? `<br><small>Capacidade: ${location.capacidade}</small>` : ''}
+                </div>
+                <div class="item-actions">
+                    <button class="btn-small ${location.ativo ? 'btn-danger' : 'btn-success'}" 
+                            onclick="inlineManager.toggleLocation(${location.id}, ${location.ativo})">
+                        ${location.ativo ? 'Desativar' : 'Ativar'}
+                    </button>
+                </div>
+            `;
+            container.appendChild(item);
+        });
+    }
+    
+    /**
+     * Carrega celebrantes para gerenciamento
+     */
+    async loadCelebrantsForManagement() {
+        await this.loadCelebrants();
+        
+        const container = document.getElementById('celebrantsList');
+        if (!container) return;
+        
+        container.innerHTML = '';
+        
+        this.celebrants.forEach(celebrant => {
+            const item = document.createElement('div');
+            item.className = 'management-item';
+            item.innerHTML = `
+                <div class="item-info">
+                    <strong>${celebrant.nome_completo}</strong>
+                    <br><small>${celebrant.tipo}</small>
+                    ${celebrant.telefone_formatado ? `<br><small>${celebrant.telefone_formatado}</small>` : ''}
+                </div>
+                <div class="item-actions">
+                    <button class="btn-small ${celebrant.ativo ? 'btn-danger' : 'btn-success'}" 
+                            onclick="inlineManager.toggleCelebrant(${celebrant.id}, ${celebrant.ativo})">
+                        ${celebrant.ativo ? 'Desativar' : 'Ativar'}
+                    </button>
+                </div>
+            `;
+            container.appendChild(item);
+        });
+    }
+    
+    /**
+     * Alterna status de local
+     */
+    async toggleLocation(id, currentStatus) {
+        try {
+            const response = await fetch(`api/buscar-locais.php?id=${id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ 
-                    ativo: currentStatus ? 0 : 1 
+                body: JSON.stringify({
+                    ativo: currentStatus ? 0 : 1
                 })
             });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const result = await response.json();
-
-            if (result.success) {
-                this.showToast('Status atualizado com sucesso!', 'success');
-                this.loadCelebrants();
-                if (window.weddingCalendar) {
-                    window.weddingCalendar.loadCelebrants();
-                }
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                this.showAlert('success', 'Sucesso', 'Status atualizado com sucesso');
+                await this.loadLocationsForManagement();
+                await this.loadLocations();
             } else {
-                this.showToast(result.message || 'Erro ao atualizar status', 'error');
-            }
-        } catch (error) {
-            console.error('Erro:', error);
-            this.showToast('Erro ao comunicar com servidor', 'error');
-        }
-    }
-
-    async deleteCelebrant(id, nome) {
-        if (!confirm(`Tem certeza que deseja excluir "${nome}"?`)) return;
-
-        try {
-            const response = await fetch(`api/buscar-padres.php?id=${id}`, {
-                method: 'DELETE'
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const result = await response.json();
-
-            if (result.success) {
-                this.showToast('Celebrante excluído com sucesso!', 'success');
-                this.loadCelebrants();
-                if (window.weddingCalendar) {
-                    window.weddingCalendar.loadCelebrants();
-                }
-            } else {
-                this.showToast(result.message || 'Erro ao excluir celebrante', 'error');
-            }
-        } catch (error) {
-            console.error('Erro:', error);
-            this.showToast('Erro ao comunicar com servidor', 'error');
-        }
-    }
-
-    // ========== UTILITÁRIOS ==========
-
-    showToast(message, type = 'success') {
-        const toast = document.getElementById('toast');
-        toast.textContent = message;
-        toast.className = `toast show ${type}`;
-
-        setTimeout(() => {
-            toast.className = 'toast';
-        }, 3000);
-    }
-}
-
-// Funções globais
-function openManageLocations() {
-    document.getElementById('manageLocationsModal').classList.add('active');
-    inlineManagement.loadLocations();
-}
-
-function closeManageLocations() {
-    document.getElementById('manageLocationsModal').classList.remove('active');
-}
-
-function openManageCelebrants() {
-    document.getElementById('manageCelebrantsModal').classList.add('active');
-    inlineManagement.loadCelebrants();
-}
-
-function closeManageCelebrants() {
-    document.getElementById('manageCelebrantsModal').classList.remove('active');
-}
-
-function openAddLocation() {
-    document.getElementById('locationFormTitle').innerHTML = '<i class="fas fa-plus"></i> Novo Local';
-    document.getElementById('locationForm').reset();
-    document.getElementById('locationId').value = '';
-    document.getElementById('locationFormModal').classList.add('active');
-}
-
-function closeLocationForm() {
-    document.getElementById('locationFormModal').classList.remove('active');
-}
-
-function openAddCelebrant() {
-    document.getElementById('celebrantFormTitle').innerHTML = '<i class="fas fa-plus"></i> Novo Celebrante';
-    document.getElementById('celebrantForm').reset();
-    document.getElementById('celebrantId').value = '';
-    document.getElementById('celebrantFormModal').classList.add('active');
-}
-
-function closeCelebrantForm() {
-    document.getElementById('celebrantFormModal').classList.remove('active');
-}
-
-// Inicializa
-let inlineManagement;
-document.addEventListener('DOMContentLoaded', () => {
-    inlineManagement = new InlineManagement();
-});
-
-// END: Original code imported from the repository
+                this.showAlert('error', 
