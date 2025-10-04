@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Locais e Celebrantes</title>
+    
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/gestao.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="main-header">
+        <div class="header-container">
+            <div class="logo-section">
+                <i class="fas fa-church"></i>
+                <h1>Gestão de Locais e Celebrantes</h1>
+            </div>
+            <nav class="main-nav">
+                <button class="nav-btn" onclick="window.location.href='index.html'">
+                    <i class="fas fa-calendar"></i> Voltar ao Calendário
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="gestao-container">
+        <!-- Seção de Locais -->
+        <section class="gestao-section">
+            <div class="section-header">
+                <h2><i class="fas fa-map-marker-alt"></i> Locais de Cerimônia</h2>
+                <button class="btn btn-primary" onclick="openAddLocalModal()">
+                    <i class="fas fa-plus"></i> Novo Local
+                </button>
+            </div>
+
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Nome do Local</th>
+                            <th>Endereço</th>
+                            <th>Capacidade</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="locaisTableBody">
+                        <tr>
+                            <td colspan="5" style="text-align: center;">Carregando...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Seção de Celebrantes -->
+        <section class="gestao-section">
+            <div class="section-header">
+                <h2><i class="fas fa-user-tie"></i> Padres e Diáconos</h2>
+                <button class="btn btn-primary" onclick="openAddCelebrantModal()">
+                    <i class="fas fa-plus"></i> Novo Celebrante
+                </button>
+            </div>
+
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Nome Completo</th>
+                            <th>Tipo</th>
+                            <th>Telefone</th>
+                            <th>Email</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="celebrantesTableBody">
+                        <tr>
+                            <td colspan="6" style="text-align: center;">Carregando...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal Adicionar/Editar Local -->
+    <div id="localModal" class="modal">
+        <div class="modal-content modal-small">
+            <div class="modal-header">
+                <h3 id="localModalTitle"><i class="fas fa-map-marker-alt"></i> Novo Local</h3>
+                <button class="close-modal" onclick="closeLocalModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="localForm" class="modal-form">
+                <input type="hidden" id="localId">
+                
+                <div class="form-group">
+                    <label>Nome do Local *</label>
+                    <input type="text" id="localNome" required class="uppercase-input">
+                </div>
+                
+                <div class="form-group">
+                    <label>Endereço</label>
+                    <input type="text" id="localEndereco" class="uppercase-input">
+                </div>
+                
+                <div class="form-group">
+                    <label>Capacidade</label>
+                    <input type="number" id="localCapacidade" min="1">
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeLocalModal()">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Salvar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Adicionar/Editar Celebrante -->
+    <div id="celebrantModal" class="modal">
+        <div class="modal-content modal-small">
+            <div class="modal-header">
+                <h3 id="celebrantModalTitle"><i class="fas fa-user-tie"></i> Novo Celebrante</h3>
+                <button class="close-modal" onclick="closeCelebrantModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="celebrantForm" class="modal-form">
+                <input type="hidden" id="celebrantId">
+                
+                <div class="form-group">
+                    <label>Nome Completo *</label>
+                    <input type="text" id="celebrantNome" required class="uppercase-input">
+                </div>
+                
+                <div class="form-group">
+                    <label>Tipo *</label>
+                    <select id="celebrantTipo" required>
+                        <option value="">Selecione...</option>
+                        <option value="PADRE">Padre</option>
+                        <option value="DIÁCONO">Diácono</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Telefone</label>
+                    <input type="tel" id="celebrantTelefone" placeholder="(00) 00000-0000">
+                </div>
+                
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="celebrantEmail">
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeCelebrantModal()">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Salvar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmação -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content modal-alert">
+            <div class="alert-icon warning">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h3 id="confirmTitle">Confirmar Exclusão</h3>
+            <p id="confirmMessage">Tem certeza que deseja excluir este registro?</p>
+            <div class="form-actions">
+                <button class="btn btn-secondary" onclick="closeConfirmModal()">
+                    Cancelar
+                </button>
+                <button class="btn" style="background: var(--danger-color); color: white;" onclick="confirmDelete()">
+                    <i class="fas fa-trash"></i> Excluir
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast de Notificação -->
+    <div id="toast"></div>
+
+    <script src="assets/js/gestao.js"></script>
+</body>
+</html>
