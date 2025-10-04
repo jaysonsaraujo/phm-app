@@ -1,462 +1,339 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Agendamento de Casamentos - Paróquia</title>
-    
-    <!-- CSS -->
-    <link rel="stylesheet" href="assets/css/style.css">
-    
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-</head>
-<body>
-    <!-- Header -->
-    <header class="main-header">
-        <div class="header-container">
-            <div class="logo-section">
-                <i class="fas fa-church"></i>
-                <h1 id="system-title">Sistema de Agendamento de Casamentos</h1>
-            </div>
-            <nav class="main-nav">
-                <button class="nav-btn" onclick="location.reload()">
-                    <i class="fas fa-calendar"></i> Calendário
-                </button>
-                <button class="nav-btn" onclick="window.location.href='gestao.html'">
-                    <i class="fas fa-list"></i> Gestão Completa
-                </button>
-                <button class="nav-btn" onclick="window.location.href='configuracoes.html'">
-                    <i class="fas fa-cog"></i> Configurações
-                </button>
-            </nav>
-        </div>
-    </header>
+/**
+ * Sistema de Validação de Formulários
+ * Validação completa com máscaras
+ */
 
-    <!-- Container Principal -->
-    <main class="main-container">
-        <!-- Controles do Calendário -->
-        <section class="calendar-controls">
-            <div class="year-selector">
-                <button id="prevYear" class="year-btn">
-                    <i class="fas fa-chevron-left"></i>
-                </button>
-                <select id="yearSelect" class="year-select">
-                    <!-- Anos serão preenchidos via JavaScript -->
-                </select>
-                <button id="nextYear" class="year-btn">
-                    <i class="fas fa-chevron-right"></i>
-                </button>
-            </div>
+class FormValidator {
+    constructor() {
+        this.forms = {
+            booking: document.getElementById('bookingForm'),
+            newLocation: document.getElementById('newLocationForm'),
+            newCelebrant: document.getElementById('newCelebrantForm')
+        };
+        
+        this.touchedFields = new Set(); // Rastreia campos que já foram tocados
+        
+        this.validators = {
+            required: (value) => value.trim() !== '',
+            email: (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
+            phone: (value) => {
+                const cleanPhone = value.replace(/\D/g, '');
+                return cleanPhone.length === 10 || cleanPhone.length === 11;
+            },
+            date: (value) => !isNaN(Date.parse(value)),
+            time: (value) => /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(value),
+            minLength: (value, length) => value.trim().length >= length,
+            maxLength: (value, length) => value.trim().length <= length
+        };
+        
+        this.init();
+    }
+    
+    init() {
+        this.setupFormListeners();
+        this.setupInputMasks();
+        this.setupUppercaseInputs();
+        this.setupRealTimeValidation();
+    }
+    
+    setupInputMasks() {
+        // Máscara de telefone/WhatsApp
+        const phoneInputs = document.querySelectorAll('input[type="tel"]');
+        phoneInputs.forEach(input => {
+            input.removeEventListener('input', this.phoneMask);
+            input.removeEventListener('keydown', this.preventInvalidChars);
             
-            <div class="month-navigation">
-                <button id="prevMonth" class="month-btn">
-                    <i class="fas fa-angle-left"></i> Mês Anterior
-                </button>
-                <h2 id="currentMonth" class="current-month">Janeiro 2024</h2>
-                <button id="nextMonth" class="month-btn">
-                    Próximo Mês <i class="fas fa-angle-right"></i>
-                </button>
-            </div>
+            input.addEventListener('input', this.phoneMask.bind(this));
+            input.addEventListener('keydown', this.preventInvalidChars);
+            input.addEventListener('paste', this.handlePaste.bind(this));
             
-            <div class="legend">
-                <span class="legend-item">
-                    <span class="legend-color available"></span> Disponível
-                </span>
-                <span class="legend-item">
-                    <span class="legend-color booked"></span> Reservado
-                </span>
-                <span class="legend-item">
-                    <span class="legend-color past"></span> Passado
-                </span>
-                <span class="legend-item">
-                    <span class="legend-color today"></span> Hoje
-                </span>
-            </div>
-        </section>
-
-        <!-- Calendário -->
-        <section class="calendar-wrapper">
-            <div id="calendar" class="calendar-grid">
-                <div class="weekdays">
-                    <div class="weekday">DOM</div>
-                    <div class="weekday">SEG</div>
-                    <div class="weekday">TER</div>
-                    <div class="weekday">QUA</div>
-                    <div class="weekday">QUI</div>
-                    <div class="weekday">SEX</div>
-                    <div class="weekday">SÁB</div>
-                </div>
-                <div id="calendarDays" class="calendar-days">
-                    <!-- Dias serão preenchidos via JavaScript -->
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <!-- Modal de Agendamento -->
-    <div id="bookingModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2><i class="fas fa-rings-wedding"></i> Novo Agendamento de Casamento</h2>
-                <button class="close-modal" onclick="closeModal()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            
-            <form id="bookingForm" class="booking-form">
-                <!-- Tabela de Proclames -->
-                <div class="form-section">
-                    <h3><i class="fas fa-calendar-check"></i> Datas dos Proclames</h3>
-                    <div class="proclames-table">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Primeiro Domingo</th>
-                                    <th>Segundo Domingo</th>
-                                    <th>Terceiro Domingo</th>
-                                    <th>Data do Casamento</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td id="firstSunday">--/--/----</td>
-                                    <td id="secondSunday">--/--/----</td>
-                                    <td id="thirdSunday">--/--/----</td>
-                                    <td id="weddingDateDisplay">--/--/----</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+            if (input.value) {
+                input.value = this.formatPhone(input.value);
+            }
+        });
+        
+        // Máscara de data
+        const dateInputs = document.querySelectorAll('input[type="date"]');
+        dateInputs.forEach(input => {
+            input.addEventListener('change', () => {
+                if (this.touchedFields.has(input)) {
+                    this.validateField(input);
+                }
+            });
+        });
+        
+        // Máscara de horário
+        const timeInputs = document.querySelectorAll('input[type="time"]');
+        timeInputs.forEach(input => {
+            input.addEventListener('change', () => {
+                if (this.touchedFields.has(input)) {
+                    this.validateField(input);
+                }
+            });
+        });
+    }
+    
+    preventInvalidChars(e) {
+        if ([46, 8, 9, 27, 13].indexOf(e.keyCode) !== -1 ||
+            (e.keyCode === 65 && e.ctrlKey === true) ||
+            (e.keyCode === 67 && e.ctrlKey === true) ||
+            (e.keyCode === 86 && e.ctrlKey === true) ||
+            (e.keyCode === 88 && e.ctrlKey === true) ||
+            (e.keyCode >= 35 && e.keyCode <= 39)) {
+            return;
+        }
+        
+        if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && 
+            (e.keyCode < 96 || e.keyCode > 105)) {
+            e.preventDefault();
+        }
+    }
+    
+    handlePaste(e) {
+        e.preventDefault();
+        const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+        const cleanText = pastedText.replace(/\D/g, '');
+        e.target.value = this.formatPhone(cleanText);
+    }
+    
+    phoneMask(e) {
+        const input = e.target;
+        let value = input.value.replace(/\D/g, '');
+        
+        if (value.length > 11) {
+            value = value.substring(0, 11);
+        }
+        
+        input.value = this.formatPhone(value);
+    }
+    
+    formatPhone(value) {
+        value = value.replace(/\D/g, '');
+        
+        if (value.length === 0) {
+            return '';
+        }
+        
+        if (value.length <= 2) {
+            return `(${value}`;
+        }
+        
+        if (value.length <= 6) {
+            return `(${value.substring(0, 2)}) ${value.substring(2)}`;
+        }
+        
+        if (value.length <= 10) {
+            return `(${value.substring(0, 2)}) ${value.substring(2, 6)}-${value.substring(6)}`;
+        }
+        
+        return `(${value.substring(0, 2)}) ${value.substring(2, 7)}-${value.substring(7, 11)}`;
+    }
+    
+    setupUppercaseInputs() {
+        const uppercaseInputs = document.querySelectorAll('.uppercase-input');
+        uppercaseInputs.forEach(input => {
+            input.addEventListener('input', (e) => {
+                const start = e.target.selectionStart;
+                const end = e.target.selectionEnd;
+                e.target.value = e.target.value.toUpperCase();
+                e.target.setSelectionRange(start, end);
+            });
+        });
+    }
+    
+    setupRealTimeValidation() {
+        const allInputs = document.querySelectorAll('input, select, textarea');
+        allInputs.forEach(input => {
+            if (input.type !== 'submit' && input.type !== 'button') {
+                
+                // Marca campo como tocado quando recebe foco
+                input.addEventListener('focus', () => {
+                    this.touchedFields.add(input);
+                });
+                
+                // Valida apenas campos que já foram tocados
+                input.addEventListener('blur', () => {
+                    if (this.touchedFields.has(input)) {
+                        this.validateField(input);
+                    }
+                });
+                
+                // Remove erro enquanto digita
+                input.addEventListener('input', () => {
+                    if (input.classList.contains('error')) {
+                        this.clearFieldError(input);
+                    }
+                });
+            }
+        });
+    }
+    
+    setupFormListeners() {
+        Object.values(this.forms).forEach(form => {
+            if (form) {
+                form.addEventListener('submit', (e) => {
+                    if (!this.validateForm(form)) {
+                        e.preventDefault();
+                        return false;
+                    }
+                });
+            }
+        });
+    }
+    
+    validateForm(form) {
+        let isValid = true;
+        const inputs = form.querySelectorAll('input, select, textarea');
+        
+        // Marca todos os campos como tocados no submit
+        inputs.forEach(input => {
+            this.touchedFields.add(input);
+            if (input.hasAttribute('required') && !this.validateField(input)) {
+                isValid = false;
+            }
+        });
+        
+        if (!isValid) {
+            const firstError = form.querySelector('.error');
+            if (firstError) {
+                firstError.focus();
+                firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+        
+        return isValid;
+    }
+    
+    validateField(field) {
+        const value = field.value;
+        let isValid = true;
+        let errorMessage = '';
+        
+        // Validação de campo obrigatório
+        if (field.hasAttribute('required') && !this.validators.required(value)) {
+            isValid = false;
+            errorMessage = 'Este campo é obrigatório';
+        }
+        
+        // Validação específica por tipo (só se tiver valor)
+        if (isValid && value) {
+            switch (field.type) {
+                case 'email':
+                    if (!this.validators.email(value)) {
+                        isValid = false;
+                        errorMessage = 'Email inválido';
+                    }
+                    break;
                     
-                    <!-- Data da Entrevista -->
-                    <div class="form-row" style="margin-top: 1.5rem;">
-                        <div class="form-group">
-                            <label>Data da Entrevista</label>
-                            <input type="date" id="interviewDate" tabindex="1">
-                        </div>
-                    </div>
-                </div>
+                case 'tel':
+                    const cleanPhone = value.replace(/\D/g, '');
+                    if (cleanPhone.length < 10) {
+                        isValid = false;
+                        errorMessage = 'Telefone incompleto. Digite DDD + número';
+                    } else if (cleanPhone.length > 11) {
+                        isValid = false;
+                        errorMessage = 'Telefone inválido';
+                    }
+                    break;
+                    
+                case 'date':
+                    if (!this.validators.date(value)) {
+                        isValid = false;
+                        errorMessage = 'Data inválida';
+                    } else if (field.id === 'weddingDate') {
+                        const selectedDate = new Date(value + 'T00:00:00');
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        
+                        if (selectedDate < today) {
+                            isValid = false;
+                            errorMessage = 'A data não pode ser no passado';
+                        }
+                    }
+                    break;
+                    
+                case 'time':
+                    if (!this.validators.time(value)) {
+                        isValid = false;
+                        errorMessage = 'Horário inválido';
+                    }
+                    break;
+            }
+        }
+        
+        // Validação de nome completo (só se tiver valor)
+        if (isValid && value && (field.id === 'brideName' || field.id === 'groomName')) {
+            const names = value.trim().split(/\s+/);
+            if (names.length < 2) {
+                isValid = false;
+                errorMessage = 'Digite o nome completo';
+            }
+        }
+        
+        // Aplica ou remove erro
+        if (!isValid) {
+            this.showFieldError(field, errorMessage);
+        } else {
+            this.clearFieldError(field);
+        }
+        
+        return isValid;
+    }
+    
+    showFieldError(field, message) {
+        field.classList.add('error');
+        
+        let errorElement = field.parentElement.querySelector('.error-message');
+        if (errorElement) {
+            errorElement.remove();
+        }
+        
+        errorElement = document.createElement('span');
+        errorElement.className = 'error-message show';
+        errorElement.textContent = message;
+        field.parentElement.appendChild(errorElement);
+    }
+    
+    clearFieldError(field) {
+        field.classList.remove('error');
+        const errorElement = field.parentElement.querySelector('.error-message');
+        if (errorElement) {
+            errorElement.remove();
+        }
+    }
+    
+    showAlert(type, title, message) {
+        const modal = document.getElementById('alertModal');
+        const icon = document.getElementById('alertIcon');
+        const titleElement = document.getElementById('alertTitle');
+        const messageElement = document.getElementById('alertMessage');
+        
+        const icons = {
+            success: '<i class="fas fa-check-circle"></i>',
+            error: '<i class="fas fa-times-circle"></i>',
+            warning: '<i class="fas fa-exclamation-triangle"></i>',
+            info: '<i class="fas fa-info-circle"></i>'
+        };
+        
+        icon.className = `alert-icon ${type}`;
+        icon.innerHTML = icons[type] || icons.info;
+        titleElement.textContent = title;
+        messageElement.textContent = message;
+        
+        modal.classList.add('active');
+        
+        if (type === 'success') {
+            setTimeout(() => {
+                modal.classList.remove('active');
+            }, 3000);
+        }
+    }
+}
 
-                <!-- Informações Básicas -->
-                <div class="form-section">
-                    <h3><i class="fas fa-info-circle"></i> Informações Básicas</h3>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>ID do Agendamento</label>
-                            <input type="text" id="bookingId" readonly>
-                        </div>
-                        <div class="form-group">
-                            <label>Data do Agendamento</label>
-                            <input type="text" id="bookingDate" readonly>
-                        </div>
-                    </div>
-                </div>
+// Inicializa quando o DOM carregar
+document.addEventListener('DOMContentLoaded', () => {
+    window.formValidator = new FormValidator();
+});
 
-                <!-- Dados dos Noivos -->
-                <div class="form-section">
-                    <h3><i class="fas fa-heart"></i> Dados dos Noivos</h3>
-                    <div class="form-row">
-                        <div class="form-group flex-1">
-                            <label>Nome Completo da Noiva *</label>
-                            <input type="text" id="brideName" required class="uppercase-input" tabindex="2">
-                        </div>
-                        <div class="form-group">
-                            <label>WhatsApp da Noiva *</label>
-                            <input type="tel" id="brideWhatsapp" required placeholder="(00) 00000-0000" tabindex="3">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group flex-1">
-                            <label>Nome Completo do Noivo *</label>
-                            <input type="text" id="groomName" required class="uppercase-input" tabindex="4">
-                        </div>
-                        <div class="form-group">
-                            <label>WhatsApp do Noivo *</label>
-                            <input type="tel" id="groomWhatsapp" required placeholder="(00) 00000-0000" tabindex="5">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Dados da Cerimônia -->
-                <div class="form-section">
-                    <h3><i class="fas fa-church"></i> Dados da Cerimônia</h3>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Data do Casamento *</label>
-                            <input type="date" id="weddingDate" required tabindex="6">
-                        </div>
-                        <div class="form-group">
-                            <label>Horário *</label>
-                            <input type="time" id="weddingTime" required tabindex="7">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group flex-1">
-                            <label>Local da Cerimônia *</label>
-                            <div class="select-with-button">
-                                <select id="ceremonyLocation" required tabindex="8">
-                                    <option value="">Selecione o local...</option>
-                                </select>
-                                <button type="button" class="btn-manage" onclick="openManageLocations()">
-                                    <i class="fas fa-cog"></i>
-                                    <span>Gerenciar</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group flex-1">
-                            <label>Padre/Diácono *</label>
-                            <div class="select-with-button">
-                                <select id="celebrant" required tabindex="9">
-                                    <option value="">Selecione o celebrante...</option>
-                                </select>
-                                <button type="button" class="btn-manage" onclick="openManageCelebrants()">
-                                    <i class="fas fa-cog"></i>
-                                    <span>Gerenciar</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Informações Adicionais -->
-                <div class="form-section">
-                    <h3><i class="fas fa-clipboard-list"></i> Informações Adicionais</h3>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Transferência</label>
-                            <select id="transferType" tabindex="10">
-                                <option value="NAO">Não há transferência</option>
-                                <option value="ENTRADA_PAROQUIA">Vem de outra paróquia</option>
-                                <option value="SAIDA_PAROQUIA">Irá para outra paróquia</option>
-                                <option value="ENTRADA_DIOCESE">Vem de outra diocese</option>
-                                <option value="SAIDA_DIOCESE">Irá para outra diocese</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Com Efeito Civil</label>
-                            <select id="civilEffect" tabindex="11">
-                                <option value="0">Não</option>
-                                <option value="1">Sim</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group flex-1">
-                            <label>Observações</label>
-                            <textarea id="observations" rows="3" class="uppercase-input" tabindex="12"></textarea>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group flex-1">
-                            <label>Mensagem do Sistema</label>
-                            <textarea id="systemMessage" rows="2" class="uppercase-input" tabindex="13"></textarea>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Botões de Ação -->
-                <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal()" tabindex="15">
-                        <i class="fas fa-arrow-left"></i> Voltar ao Calendário
-                    </button>
-                    <button type="submit" class="btn btn-primary" tabindex="14">
-                        <i class="fas fa-save"></i> Salvar Agendamento
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modal de Gestão de Locais -->
-    <div id="manageLocationsModal" class="modal modal-overlay">
-        <div class="modal-content modal-large">
-            <div class="modal-header">
-                <h2><i class="fas fa-map-marker-alt"></i> Gerenciar Locais de Cerimônia</h2>
-                <button class="close-modal" onclick="closeManageLocations()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            
-            <div class="modal-body">
-                <div class="manage-actions">
-                    <button class="btn btn-primary" onclick="openAddLocation()">
-                        <i class="fas fa-plus"></i> Novo Local
-                    </button>
-                </div>
-                
-                <div class="manage-table">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Nome do Local</th>
-                                <th>Endereço</th>
-                                <th>Capacidade</th>
-                                <th>Status</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="locationsTableBody">
-                            <tr>
-                                <td colspan="5" style="text-align: center;">Carregando...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal de Gestão de Celebrantes -->
-    <div id="manageCelebrantsModal" class="modal modal-overlay">
-        <div class="modal-content modal-large">
-            <div class="modal-header">
-                <h2><i class="fas fa-user-tie"></i> Gerenciar Padres e Diáconos</h2>
-                <button class="close-modal" onclick="closeManageCelebrants()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            
-            <div class="modal-body">
-                <div class="manage-actions">
-                    <button class="btn btn-primary" onclick="openAddCelebrant()">
-                        <i class="fas fa-plus"></i> Novo Celebrante
-                    </button>
-                </div>
-                
-                <div class="manage-table">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Nome Completo</th>
-                                <th>Tipo</th>
-                                <th>Telefone</th>
-                                <th>Email</th>
-                                <th>Status</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="celebrantsTableBody">
-                            <tr>
-                                <td colspan="6" style="text-align: center;">Carregando...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Adicionar/Editar Local -->
-    <div id="locationFormModal" class="modal modal-overlay">
-        <div class="modal-content modal-small">
-            <div class="modal-header">
-                <h3 id="locationFormTitle"><i class="fas fa-map-marker-alt"></i> Novo Local</h3>
-                <button class="close-modal" onclick="closeLocationForm()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <form id="locationForm" style="padding: 2rem;">
-                <input type="hidden" id="locationId">
-                
-                <div class="form-group">
-                    <label>Nome do Local *</label>
-                    <input type="text" id="locationName" required class="uppercase-input">
-                </div>
-                
-                <div class="form-group">
-                    <label>Endereço</label>
-                    <input type="text" id="locationAddress" class="uppercase-input">
-                </div>
-                
-                <div class="form-group">
-                    <label>Capacidade</label>
-                    <input type="number" id="locationCapacity" min="1">
-                </div>
-                
-                <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" onclick="closeLocationForm()">
-                        Cancelar
-                    </button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i> Salvar
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modal Adicionar/Editar Celebrante -->
-    <div id="celebrantFormModal" class="modal modal-overlay">
-        <div class="modal-content modal-small">
-            <div class="modal-header">
-                <h3 id="celebrantFormTitle"><i class="fas fa-user-tie"></i> Novo Celebrante</h3>
-                <button class="close-modal" onclick="closeCelebrantForm()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <form id="celebrantForm" style="padding: 2rem;">
-                <input type="hidden" id="celebrantId">
-                
-                <div class="form-group">
-                    <label>Nome Completo *</label>
-                    <input type="text" id="celebrantName" required class="uppercase-input">
-                </div>
-                
-                <div class="form-group">
-                    <label>Tipo *</label>
-                    <select id="celebrantType" required>
-                        <option value="">Selecione...</option>
-                        <option value="PADRE">Padre</option>
-                        <option value="DIÁCONO">Diácono</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label>Telefone</label>
-                    <input type="tel" id="celebrantPhone" placeholder="(00) 00000-0000">
-                </div>
-                
-                <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" id="celebrantEmail">
-                </div>
-                
-                <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" onclick="closeCelebrantForm()">
-                        Cancelar
-                    </button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i> Salvar
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modal de Alertas -->
-    <div id="alertModal" class="modal">
-        <div class="modal-content modal-alert">
-            <div class="alert-icon" id="alertIcon"></div>
-            <h3 id="alertTitle"></h3>
-            <p id="alertMessage"></p>
-            <button class="btn btn-primary" onclick="closeAlert()">Entendi</button>
-        </div>
-    </div>
-
-    <!-- Toast -->
-    <div id="toast" class="toast"></div>
-
-    <!-- Scripts -->
-    <script src="assets/js/calendar.js"></script>
-    <script src="assets/js/form-validation.js"></script>
-    <script src="assets/js/form-handler.js"></script>
-    <script src="assets/js/inline-management.js"></script>
-    <script src="assets/js/main.js"></script>
-</body>
-</html>
+// Exporta para uso global
+window.FormValidator = FormValidator;
