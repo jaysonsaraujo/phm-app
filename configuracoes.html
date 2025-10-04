@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurações - Sistema de Agendamento de Casamentos</title>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/config.css">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="main-header">
+        <div class="header-container">
+            <div class="logo-section">
+                <i class="fas fa-church"></i>
+                <h1>Configurações do Sistema</h1>
+            </div>
+            <nav class="main-nav">
+                <button class="nav-btn" onclick="window.location.href='index.html'">
+                    <i class="fas fa-calendar"></i> Voltar ao Calendário
+                </button>
+                <button class="nav-btn" onclick="saveAllSettings()">
+                    <i class="fas fa-save"></i> Salvar Tudo
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Container Principal -->
+    <main class="config-container">
+        <!-- Menu Lateral -->
+        <aside class="config-sidebar">
+            <nav class="config-nav">
+                <button class="config-nav-item active" data-section="general">
+                    <i class="fas fa-cog"></i>
+                    <span>Configurações Gerais</span>
+                </button>
+                <button class="config-nav-item" data-section="schedule">
+                    <i class="fas fa-clock"></i>
+                    <span>Agendamentos</span>
+                </button>
+                <button class="config-nav-item" data-section="locations">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>Locais</span>
+                </button>
+                <button class="config-nav-item" data-section="celebrants">
+                    <i class="fas fa-user-tie"></i>
+                    <span>Celebrantes</span>
+                </button>
+                <button class="config-nav-item" data-section="notifications">
+                    <i class="fas fa-bell"></i>
+                    <span>Notificações</span>
+                </button>
+                <button class="config-nav-item" data-section="appearance">
+                    <i class="fas fa-palette"></i>
+                    <span>Aparência</span>
+                </button>
+                <button class="config-nav-item" data-section="reports">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Relatórios</span>
+                </button>
+                <button class="config-nav-item" data-section="backup">
+                    <i class="fas fa-database"></i>
+                    <span>Backup</span>
+                </button>
+            </nav>
+        </aside>
+
+        <!-- Conteúdo Principal -->
+        <section class="config-content">
+            <!-- Configurações Gerais -->
+            <div id="general-section" class="config-section active">
+                <h2><i class="fas fa-cog"></i> Configurações Gerais</h2>
+                
+                <div class="config-group">
+                    <h3>Informações da Paróquia</h3>
+                    <div class="config-row">
+                        <div class="config-field">
+                            <label for="system-name">Nome do Sistema</label>
+                            <input type="text" id="system-name" placeholder="Sistema de Agendamento de Casamentos">
+                            <small>Este nome aparecerá no topo de todas as páginas</small>
+                        </div>
+                    </div>
+                    <div class="config-row">
+                        <div class="config-field">
+                            <label for="parish-name">Nome da Paróquia</label>
+                            <input type="text" id="parish-name" placeholder="Paróquia São José">
+                        </div>
+                        <div class="config-field">
+                            <label for="parish-phone">Telefone</label>
+                            <input type="tel" id="parish-phone" placeholder="(00) 0000-0000">
+                        </div>
+                    </div>
+                    <div class="config-row">
+                        <div class="config-field">
+                            <label for="parish-email">Email</label>
+                            <input type="email" id="parish-email" placeholder="contato@paroquia.com.br">
+                        </div>
+                        <div class="config-field">
+                            <label for="parish-website">Website</label>
+                            <input type="url" id="parish-website" placeholder="https://www.paroquia.com.br">
+                        </div>
+                    </div>
+                    <div class="config-row">
+                        <div class="config-field full-width">
+                            <label for="parish-address">Endereço Completo</label>
+                            <textarea id="parish-address" rows="2" placeholder="Rua, número, bairro, cidade - Estado"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="config-group">
+                    <h3>Responsável pelo Sistema</h3>
+                    <div class="config-row">
+                        <div class="config-field">
+                            <label for="admin-name">Nome do Responsável</label>
+                            <input type="text" id="admin-name" placeholder="Nome completo">
+                        </div>
+                        <div class="config-field">
+                            <label for="admin-role">Cargo</label>
+                            <input type="text" id="admin-role" placeholder="Secretário(a) Paroquial">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Configurações de Agendamento -->
+            <div id="schedule-section" class="config-section">
+                <h2><i class="fas fa-clock"></i> Configurações de Agendamento</h2>
+                
+                <div class="config-group">
+                    <h3>Horários de Funcionamento</h3>
+                    <div class="config-row">
+                        <div class="config-field">
+                            <label for="schedule-start">Horário Inicial</label>
+                            <input type="time" id="schedule-start" value="08:00">
+                            <small>Primeiro horário disponível para agendamento</small>
+                        </div>
+                        <div class="config-field">
+                            <label for="schedule-end">Horário Final</label>
+                            <input type="time" id="schedule-end" value="20:00">
+                            <small>Último horário disponível para agendamento</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="config-group">
+                    <h3>Durações e Intervalos</h3>
+                    <div class="config-row">
+                        <div class="config-field">
+                            <label for="ceremony-duration">Duração da Cerimônia (minutos)</label>
+                            <input type="number" id="ceremony-duration" min="30" max="180" value="60">
+                            <small>Tempo padrão de duração de cada cerimônia</small>
+                        </div>
+                        <div class="config-field">
+                            <label for="ceremony-interval">Intervalo entre Cerimônias (minutos)</label>
+                            <input type="number" id="ceremony-interval" min="15" max="120" value="30">
+                            <small>Tempo mínimo entre uma cerimônia e outra</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="config-group">
+                    <h3>Prazos de Agendamento</h3>
+                    <div class="config-row">
+                        <div class="config-field">
+                            <label for="min-advance">Antecedência Mínima (dias)</label>
+                            <input type="number" id="min-advance" min="1" max="365" value="90">
+                            <small>Dias mínimos de antecedência para agendar</small>
+                        </div>
+                        <div class="config-field">
+                            <label for="max-advance">Antecedência Máxima (dias)</label>
+                            <input type="number" id="max-advance" min="30" max="730" value="365">
+                            <small>Dias máximos de antecedência para agendar</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="config-group">
+                    <h3>Restrições de Agendamento</h3>
+                    <div class="config-row">
+                        <div class="config-field">
+                            <label for="max-per-day">Máximo de Casamentos por Dia</label>
+                            <input type="number" id="max-per-day" min="1" max="20" value="8">
+                        </div>
+                        <div class="config-field">
+                            <label for="max-per-celebrant">Máximo por Celebrante/Dia</label>
+                            <input type="number" id="max-per-celebrant" min="1" max="10" value="4">
+                        </div>
+                    </div>
+                    <div class="config-row">
+                        <div class="config-field full-width">
+                            <label>Dias da Semana Permitidos</label>
+                            <div class="checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="allow-sunday" checked>
+                                    <span>Domingo</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="allow-monday">
+                                    <span>Segunda</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="allow-tuesday">
+                                    <span>Terça</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="allow-wednesday">
+                                    <span>Quarta</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="allow-thursday">
+                                    <span>Quinta</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="allow-friday" checked>
+                                    <span>Sexta</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="allow-saturday" checked>
+                                    <span>Sábado</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gerenciamento de Locais -->
+            <div id="locations-section" class="config-section">
+                <h2><i class="fas fa-map-marker-alt"></i> Gerenciamento de Locais</h2>
+                
+                <div class="config-group">
+                    <div class="section-header">
+                        <h3>Locais de Cerimônia</h3>
+                        <button class="btn btn-primary" onclick="openAddLocationModal()">
+                            <i class="fas fa-plus"></i> Adicionar Local
+                        </button>
+                    </div>
+                    
+                    <div class="data-table-container">
+                        <table class="data-table" id="locations-table">
+                            <thead>
+                                <tr>
+                                    <th>Nome do Local</th>
+                                    <th>Endereço</th>
+                                    <th>Capacidade</th>
+                                    <th>Agendamentos</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Dados serão carregados via JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gerenciamento de Celebrantes -->
+            <div id="celebrants-section" class="config-section">
+                <h2><i class="fas fa-user-tie"></i> Gerenciamento de Celebrantes</h2>
+                
+                <div class="config-group">
+                    <div class="section-header">
+                        <h3>Padres e Diáconos</h3>
+                        <button class="btn btn-primary" onclick="openAddCelebrantModal()">
+                            <i class="fas fa-plus"></i> Adicionar Celebrante
+                        </button>
+                    </div>
+                    
+                    <div class="data-table-container">
+                        <table class="data-table" id="celebrants-table">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Tipo</th>
+                                    <th>Telefone</th>
+                                    <th>Email</th>
+                                    <th>Celebrações</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Dados serão carregados via JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Configurações de Notificações -->
+            <div id="notifications-section" class="config-section">
+                <h2><i class="fas fa-bell"></i> Configurações de Notificações</h2>
+                
+                <div class="config-group">
+                    <h3>Lembretes Automáticos</h3>
+                    <div class="config-row">
+                        <div class="config-field">
+                            <label for="reminder-interview">Lembrete de Entrevista (dias antes)</label>
+                            <input type="number" id="reminder-interview" min="1" max="30" value="7">
+                        </div>
+                        <div class="config-field">
+                            <label for="reminder-wedding">Lembrete do Casamento (dias antes)</label>
+                            <input type="number" id="reminder-wedding" min="1" max="30" value="3">
+                        </div>
+                    </div>
+                    <div class="config-row">
+                        <div class="config-field">
+                            <label for="reminder-documents">Lembrete de Documentos (dias antes)</label>
+                            <input type="number" id="reminder-documents" min="1" max="60" value="30">
+                        </div>
+                        <div class="config-field">
+                            <label for="reminder-payment">Lembrete de Pagamento (dias antes)</label>
+                            <input type="number" id="reminder-payment" min="1" max="30" value="15">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="config-group">
+                    <h3>Canais de Notificação</h3>
+                    <div class="config-row">
+                        <div class="config-field">
+                            <label class="switch-label">
+                                <input type="checkbox" id="enable-whatsapp" checked>
+                                <span class="switch"></span>
+                                <span>Enviar lembretes por WhatsApp</span>
+                            </label>
+                        </div>
+                        <div class="config-field">
+                            <label class="switch-label">
+                                <input type="checkbox" id="enable-email">
+                                <span class="switch"></span>
+                                <span>Enviar lembretes por Email</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="config-row">
+                        <div class="config-field">
+                            <label class="switch-label">
+                                <input type="checkbox" id="enable-sms">
+                                <span class="switch"></span>
+                                <span>Enviar lembretes por SMS</span>
+                            </label>
+                        </div>
+                        <div class="config-field">
+                            <label class="switch-label">
+                                <input type="checkbox" id="enable-push">
+                                <span class="switch"></span>
+                                <span>Notificações Push no Sistema</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="config-group">
+                    <h3>Templates de Mensagens</h3>
+                    <div class="config-row">
+                        <div class="config-field full-width">
+                            <label for="template-confirmation">Mensagem de Confirmação</label>
+                            <textarea id="template-confirmation" rows="3">Olá {NOIVA} e {NOIVO}! Confirmamos o agendamento do seu casamento para o dia {DATA} às {HORARIO} em {LOCAL}.</textarea>
+                        </div>
+                    </div>
+                    <div class="config-row">
+                        <div class="config-field full-width">
+                            <label for="template-reminder">Mensagem de Lembrete</label>
+                            <textarea id="template-reminder" rows="3">Lembramos que seu casamento está agendado para {DATA} às {HORARIO}. Por favor, cheguem com 30 minutos de antecedência.</textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Configurações de Aparência -->
+            <div id="appearance-section" class="config-section">
+                <h2><i class="fas fa-palette"></i> Configurações de Aparência</h2>
+                
+                <div class="config-group">
+                    <h3>Cores do Sistema</h3>
+                    <div class="config-row">
+                        <div class="config-field">
+                            <label for="primary-color">Cor Principal</label>
+                            <div class="color-input-group">
+                                <input type="color" id="primary-color" value="#8B4513">
+                                <input type="text" id="primary-color-text" value="#8B4513">
+                            </div>
+                        </div>
+                        <div class="config-field">
+                            <label for="secondary-color">Cor Secundária</label>
+                            <div class="color-input-group">
+                                <input type="color" id="secondary-color" value="#D2691E">
+                                <input type="text" id="secondary-color-text" value="#D2691E">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="config-row">
+                        <div class="config-field">
+                            <label for="success-color">Cor de Sucesso</label>
+                            <div class="color-input-group">
+                                <input type="color" id="success-color" value="#28a745">
+                                <input type="text" id="success-color-text" value="#28a745">
+                            </div>
+                        </div>
+                        <div class="config-field">
+                            <label for="danger-color">Cor de Erro</label>
+                            <div class="color-input-group">
+                                <input type="color" id="danger-color" value="#dc3545">
+                                <input type="text" id="danger-color-text" value="#dc3545">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="config-group">
+                    <h3>Logo e Imagens</h3>
+                    <div class="config-row">
+                        <div class="config-field">
+                            <label for="logo-upload">Logo da Paróquia</label>
+                            <div class="file-upload">
+                                <input type="file" id="logo-upload" accept="image/*">
+                                <label for="logo-upload" class="file-upload-label">
+                                    <i class="fas fa-upload"></i> Escolher arquivo
+                                </label>
+                                <span class="file-name">Nenhum arquivo selecionado</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="logo-preview" id="logo-preview">
+                        <!-- Preview da logo -->
+                    </div>
+                </div>
+
+                <div class="config-group">
+                    <h3>Preferências Visuais</h3>
+                    <div class="config-row">
+                        <div class="config-field">
+                            <label class="switch-label">
+                                <input type="checkbox" id="enable-animations" checked>
+                                <span class="switch"></span>
+                                <span>Ativar animações</span>
+                            </label>
+                        </div>
+                        <div class="config-field">
+                            <label class="switch-label">
+                                <input type="checkbox" id="enable-shadows" checked>
+                                <span class="switch"></span>
+                                <span>Mostrar sombras</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Relatórios -->
+            <div id="reports-section" class="config-section">
+                <h2><i class="fas fa-chart-bar"></i> Relatórios e Estatísticas</h2>
+                
+                <div class="config-group">
+                    <h3>Estatísticas Gerais</h3>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-ring"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-value" id="total-bookings">0</div>
+                                <div class="stat-label">Total de Casamentos</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-calendar-check"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-value" id="upcoming-bookings">0</div>
+                                <div class="stat-label">Próximos Casamentos</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-value" id="total-couples">0</div>
+                                <div class="stat-label">Casais Atendidos</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-percentage"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-value" id="occupancy-rate">0%</div>
+                                <div class="stat-label">Taxa de Ocupação</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="config-group">
+                    <h3>Gerar Relatórios</h3>
+                    <div class="config-row">
+                        <div class="config-field">
+                            <label for="report-type">Tipo de Relatório</label>
+                            <select id="report-type">
+                                <option value="monthly">Mensal</option>
+                                <option value="quarterly">Trimestral</option>
+                                <option value="yearly">Anual</option>
+                                <option value="custom">Personalizado</option>
+                            </select>
+                        </div>
+                        <div class="config-field">
+                            <label for="report-format">Formato</label>
+                            <select id="report-format">
+                                <option value="pdf">PDF</option>
+                                <option value="excel">Excel</option>
+                                <option value="csv">CSV</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="config-row">
+                        <button class="btn btn-primary" onclick="generateReport()">
+                            <i class="fas fa-file-download"></i> Gerar Relatório
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Backup e Restauração -->
+            <div id="backup-section" class="config-section">
+                <h2><i class="fas fa-database"></i> Backup e Restauração</h2>
+                
+                <div class="config-group">
+                    <h3>Backup Automático</h3>
+                    <div class="config-row">
+                        <div class="config-field">
+                            <label class="switch-label">
+                                <input type="checkbox" id="enable-auto-backup" checked>
+                                <span class="switch"></span>
+                                <span>Ativar backup automático</span>
+                            </label>
+                        </div>
+                        <div class="config-field">
+                            <label for="backup-frequency">Frequência</label>
+                            <select id="backup-frequency">
+                                <option value="daily">Diário</option>
+                                <option value="weekly" selected>Semanal</option>
+                                <option value="monthly">Mensal</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="config-row">
+                        <div class="config-field">
+                            <label for="backup-time">Horário do Backup</label>
+                            <input type="time" id="backup-time" value="03:00">
+                        </div>
+                        <div class="config-field">
+                            <label for="backup-retention">Retenção (dias)</label>
+                            <input type="number" id="backup-retention" min="7" max="365" value="30">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="config-group">
+                    <h3>Backup Manual</h3>
+                    <div class="backup-actions">
+                        <button class="btn btn-primary" onclick="createBackup()">
+                            <i class="fas fa-download"></i> Criar Backup Agora
+                        </button>
+                        <button class="btn btn-secondary" onclick="openRestoreModal()">
+                            <i class="fas fa-upload"></i> Restaurar Backup
+                        </button>
+                    </div>
+                    
+                    <div class="backup-list">
+                        <h4>Backups Recentes</h4>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Tamanho</th>
+                                    <th>Tipo</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="backup-list-body">
+                                <!-- Lista de backups será carregada aqui -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="config-group">
+                    <h3>Exportar Dados</h3>
+                    <div class="config-row">
+                        <button class="btn btn-secondary" onclick="exportData('agendamentos')">
+                            <i class="fas fa-file-export"></i> Exportar Agendamentos
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportData('locais')">
+                            <i class="fas fa-file-export"></i> Exportar Locais
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportData('celebrantes')">
+                            <i class="fas fa-file-export"></i> Exportar Celebrantes
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modais -->
+    <!-- Modal de Confirmação de Salvamento -->
+    <div id="save-confirmation-modal" class="modal">
+        <div class="modal-content modal-small">
+            <div class="modal-header">
+                <h3><i class="fas fa-save"></i> Salvar Configurações</h3>
+                <button class="close-modal" onclick="closeSaveModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Deseja salvar todas as alterações realizadas?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeSaveModal()">Cancelar</button>
+                <button class="btn btn-primary" onclick="confirmSave()">
+                    <i class="fas fa-check"></i> Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast de Notificação -->
+    <div id="toast-container"></div>
+
+    <!-- Scripts -->
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/config-manager.js"></script>
+</body>
+</html>
