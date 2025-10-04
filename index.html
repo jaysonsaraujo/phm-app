@@ -33,8 +33,6 @@
         </div>
     </header>
 
-    <script src="assets/js/form-handler.js"></script>
-
     <!-- Container Principal -->
     <main class="main-container">
         <!-- Controles do Calendário -->
@@ -107,6 +105,31 @@
             </div>
             
             <form id="bookingForm" class="booking-form">
+                <!-- Tabela de Proclames - MOVIDA PARA O TOPO -->
+                <div class="form-section">
+                    <h3><i class="fas fa-calendar-check"></i> Datas dos Proclames</h3>
+                    <div class="proclames-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Primeiro Domingo</th>
+                                    <th>Segundo Domingo</th>
+                                    <th>Terceiro Domingo</th>
+                                    <th>Data do Casamento</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td id="firstSunday">--/--/----</td>
+                                    <td id="secondSunday">--/--/----</td>
+                                    <td id="thirdSunday">--/--/----</td>
+                                    <td id="weddingDateDisplay">--/--/----</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
                 <!-- Informações Básicas -->
                 <div class="form-section">
                     <h3><i class="fas fa-info-circle"></i> Informações Básicas</h3>
@@ -220,31 +243,6 @@
                     </div>
                 </div>
 
-                <!-- Tabela de Proclames -->
-                <div class="form-section">
-                    <h3><i class="fas fa-calendar-check"></i> Datas dos Proclames</h3>
-                    <div class="proclames-table">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Primeiro Domingo</th>
-                                    <th>Segundo Domingo</th>
-                                    <th>Terceiro Domingo</th>
-                                    <th>Data do Casamento</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td id="firstSunday">--/--/----</td>
-                                    <td id="secondSunday">--/--/----</td>
-                                    <td id="thirdSunday">--/--/----</td>
-                                    <td id="weddingDateDisplay">--/--/----</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
                 <!-- Botões de Ação -->
                 <div class="form-actions">
                     <button type="button" class="btn btn-secondary" onclick="closeModal()" tabindex="15">
@@ -346,6 +344,7 @@
     <!-- Scripts -->
     <script src="assets/js/calendar.js"></script>
     <script src="assets/js/form-validation.js"></script>
+    <script src="assets/js/form-handler.js"></script>
     <script src="assets/js/main.js"></script>
 </body>
 </html>
