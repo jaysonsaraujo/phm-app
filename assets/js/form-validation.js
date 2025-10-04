@@ -11,7 +11,8 @@ class FormValidator {
             newCelebrant: document.getElementById('newCelebrantForm')
         };
         
-        this.touchedFields = new Set(); // Rastreia campos que já foram tocados
+        this.touchedFields = new Set();
+        this.blurredFields = new Set(); // Campos que perderam o foco
         
         this.validators = {
             required: (value) => value.trim() !== '',
@@ -37,7 +38,6 @@ class FormValidator {
     }
     
     setupInputMasks() {
-        // Máscara de telefone/WhatsApp
         const phoneInputs = document.querySelectorAll('input[type="tel"]');
         phoneInputs.forEach(input => {
             input.removeEventListener('input', this.phoneMask);
@@ -50,26 +50,6 @@ class FormValidator {
             if (input.value) {
                 input.value = this.formatPhone(input.value);
             }
-        });
-        
-        // Máscara de data
-        const dateInputs = document.querySelectorAll('input[type="date"]');
-        dateInputs.forEach(input => {
-            input.addEventListener('change', () => {
-                if (this.touchedFields.has(input)) {
-                    this.validateField(input);
-                }
-            });
-        });
-        
-        // Máscara de horário
-        const timeInputs = document.querySelectorAll('input[type="time"]');
-        timeInputs.forEach(input => {
-            input.addEventListener('change', () => {
-                if (this.touchedFields.has(input)) {
-                    this.validateField(input);
-                }
-            });
         });
     }
     
@@ -144,21 +124,22 @@ class FormValidator {
     setupRealTimeValidation() {
         const allInputs = document.querySelectorAll('input, select, textarea');
         allInputs.forEach(input => {
-            if (input.type !== 'submit' && input.type !== 'button') {
+            if (input.type !== 'submit' && input.type !== 'button' && !input.readOnly) {
                 
-                // Marca campo como tocado quando recebe foco
+                // Marca que o campo foi focado
                 input.addEventListener('focus', () => {
                     this.touchedFields.add(input);
                 });
                 
-                // Valida apenas campos que já foram tocados
+                // Valida SOMENTE quando perde o foco E foi tocado
                 input.addEventListener('blur', () => {
                     if (this.touchedFields.has(input)) {
+                        this.blurredFields.add(input);
                         this.validateField(input);
                     }
                 });
                 
-                // Remove erro enquanto digita
+                // Remove erro enquanto digita (somente se já tiver erro)
                 input.addEventListener('input', () => {
                     if (input.classList.contains('error')) {
                         this.clearFieldError(input);
@@ -185,11 +166,14 @@ class FormValidator {
         let isValid = true;
         const inputs = form.querySelectorAll('input, select, textarea');
         
-        // Marca todos os campos como tocados no submit
+        // No submit, marca todos como tocados e valida
         inputs.forEach(input => {
-            this.touchedFields.add(input);
-            if (input.hasAttribute('required') && !this.validateField(input)) {
-                isValid = false;
+            if (input.type !== 'submit' && input.type !== 'button' && !input.readOnly) {
+                this.touchedFields.add(input);
+                this.blurredFields.add(input);
+                if (input.hasAttribute('required') && !this.validateField(input)) {
+                    isValid = false;
+                }
             }
         });
         
@@ -205,6 +189,11 @@ class FormValidator {
     }
     
     validateField(field) {
+        // NÃO valida se o campo não foi "blurred"
+        if (!this.blurredFields.has(field)) {
+            return true;
+        }
+        
         const value = field.value;
         let isValid = true;
         let errorMessage = '';
