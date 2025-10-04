@@ -146,7 +146,7 @@ class WeddingCalendar {
     
     async loadAppointments() {
         try {
-            const response = await fetch(`api/buscar-agendamentos.php?year=${this.currentYear}&month=${this.currentMonth + 1}`);
+            const response = await fetch(`/api/buscar-agendamentos.php?year=${this.currentYear}&month=${this.currentMonth + 1}`);
             const data = await response.json();
             
             if (data.success) {
@@ -318,7 +318,7 @@ class WeddingCalendar {
     
     async loadLocations() {
         try {
-            const response = await fetch('api/buscar-locais.php');
+            const response = await fetch('/api/buscar-locais.php');
             const data = await response.json();
             
             if (data.success) {
@@ -343,7 +343,7 @@ class WeddingCalendar {
     
     async loadCelebrants() {
         try {
-            const response = await fetch('api/buscar-padres.php');
+            const response = await fetch('/api/buscar-padres.php');
             const data = await response.json();
             
             if (data.success) {
